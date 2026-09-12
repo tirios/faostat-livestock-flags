@@ -3,11 +3,11 @@
 Same data as out/map-2022.png, read from the same drawn export (out/map-2022-drawn.csv).
 Hover a country, zoom and pan, export a PNG.
 
-Design pass of 2026-09-12 ("TP-Professional"),
+Design pass of 2026-09-12 ("TP-Professional") ported in from the Claude Design deliverable,
 replacing the 2026-09-09 "Arcade light" pass. The palette, type and layout are theirs; the
 assertions below are the project's and every one of them still runs, though the no-figure
 border guard had to be re-aimed and lost margin (see main()). Notes on the pass, including
-superseded palettes, are not carried in this repository.
+superseded palettes, are in docs/design-notes-history.md.
 
   Projection. Plate carree is the default because a rectangular map is what most readers
   expect, but it is NOT equal-area: it stretches high latitudes, so Russia, Canada and
@@ -105,6 +105,21 @@ PROJECTIONS = {
 # points at it is omitted rather than left dangling. Set POST_HREF in the environment
 # when building the pages that ship next to the write-up.
 POST_HREF = os.environ.get('POST_HREF', '')
+# The rest of the navigation, same rule: unset means the link is not emitted, so the
+# repository build has no dangling pointers at pages that only exist on the website.
+SITE_HREF = os.environ.get('SITE_HREF', '')
+STORY_HREF = os.environ.get('STORY_HREF', '')
+FIGURE_HREF = os.environ.get('FIGURE_HREF', '')
+
+
+def nav(here):
+    """The strip of links shown on every page, minus the one you are already on."""
+    items = [(SITE_HREF, 'Back to the site', 'site'),
+             (STORY_HREF, 'The story map', 'story'),
+             (FIGURE_HREF, 'The figure', 'figure'),
+             (POST_HREF, 'How this was made', 'post')]
+    out = [f'<a href="{h}">{label}</a>' for h, label, key in items if h and key != here]
+    return ''.join(out)
 
 DEFAULT_PROJ = 'equal'   # Equal Earth. The claim is a share of the world's ANIMALS, so the
                          # default has to preserve area. Note this is not what Our World in
@@ -319,6 +334,8 @@ def main(out='out/map-2022.html', story=False):
         '__YEAR__': str(YEAR), '__W__': str(W), '__TOP__': str(top), '__BOTTOM__': str(BOTTOM),
         '__PROJS__': json.dumps(projs, separators=(',', ':')),
         '__DEFAULT_PROJ__': json.dumps(DEFAULT_PROJ),
+        '__NAV_FIGURE__': nav('figure'),
+        '__NAV_STORY__': nav('story'),
         '__READMORE__': (
             '      <a class="again readmore" id="readmore" href="' + POST_HREF + '">'
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '
@@ -386,7 +403,14 @@ CSS_MONO = r"""  /* TP: mono marks machine-reported content */
   .tabs button .k{letter-spacing:-.03em;}
 """
 
-CSS_FIGURE = r"""  :root{
+CSS_FIGURE = r"""  .topnav{display:flex; align-items:center; gap:var(--space-6); flex-wrap:wrap;
+    padding:var(--space-3) var(--space-6); border-bottom:1px solid var(--color-divider);
+    font-size:11px; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;}
+  .topnav b{font-weight:600;}
+  .navlinks{display:flex; gap:var(--space-5); flex-wrap:wrap; margin-left:auto;}
+  .navlinks a{color:color-mix(in srgb,var(--color-text) 62%,transparent); text-decoration:none;}
+  .navlinks a:hover{color:var(--color-text);}
+  :root{
     --color-bg:__GROUND__; --color-text:__INK__; --color-accent:__ACCENT__; --accent-deep:__DEEP_ACCENT__;
     --color-divider:__MID_RULE__;
     --font-heading:__FONT_SANS__; --font-body:__FONT_SANS__; --font-mono:__FONT_MONO__;
@@ -480,6 +504,12 @@ CSS_STORY = r"""  :root{
   .top{position:fixed; left:0; right:0; top:0; z-index:5; display:flex; align-items:center; gap:var(--space-6); padding:var(--space-3) var(--space-6);
     font-size:11px; letter-spacing:.08em; text-transform:uppercase; pointer-events:none; white-space:nowrap;}
   .top b{font-weight:600;} .top span{color:color-mix(in srgb,var(--color-text) 60%,transparent); font-variant-numeric:tabular-nums;}
+  /* The strip of cross-links. It sits inside .top, which is pointer-events:none so
+     the bar does not eat clicks meant for the map, so the links have to opt back in. */
+  .top .navlinks{display:flex; gap:var(--space-5); flex-wrap:wrap; margin-left:auto;
+    pointer-events:auto;}
+  .top .navlinks a{margin-left:0; border-bottom:0; color:color-mix(in srgb,var(--color-text) 62%,transparent);}
+  .top .navlinks a:hover{color:var(--color-text); border-bottom:0;}
   .top .live{display:inline-flex; align-items:center; gap:6px;} .top .live::before{content:""; width:7px; height:7px; background:var(--color-accent); animation:pulse 2.4s infinite;}
   @keyframes pulse{0%,100%{opacity:1} 50%{opacity:.25}}
   .top a{pointer-events:auto; margin-left:auto; color:var(--color-text); text-decoration:none; border-bottom:2px solid var(--color-text); padding-bottom:1px;}
@@ -588,7 +618,8 @@ CSS_STORY = r"""  :root{
   @media (max-width:1100px){ .top span.opt{display:none;} }
   @media (max-width:760px){ .legend{display:none;} .top .live{display:none;} }""" + CSS_MONO
 
-BODY_FIGURE = r"""<div class="wrap">
+BODY_FIGURE = r"""<div class="topnav"><b>Livestock provenance</b><span class="navlinks">__NAV_FIGURE__</span></div>
+<div class="wrap">
   <div class="bar">
     <div class="tabs" id="tabs" role="group" aria-label="Species"></div>
     <div class="grp"><span>Colour by</span><div class="seg" id="modebtns" role="group" aria-label="Colour by"></div></div>
@@ -659,7 +690,7 @@ BODY_STORY = r"""<div class="stage veil">
   </svg>
   <div id="tip" role="status" aria-live="polite"></div>
 </div>
-<div class="top"><b>Livestock provenance</b><span class="live">FAOSTAT QCL · release 2025-12-31</span><span class="opt" id="clock"></span><a href="map-2022.html">Open as figure</a></div>
+<div class="top"><b>Livestock provenance</b><span class="live">FAOSTAT QCL · release 2025-12-31</span><span class="opt" id="clock"></span><span class="navlinks">__NAV_STORY__</span></div>
 <div class="legend" id="hlegend"></div>
 <!-- Glyphs only. The zoom-level readout and the word Reset were text floating over the
      ocean with nothing around them, and neither told a reader anything they could not
@@ -688,32 +719,32 @@ BODY_STORY = r"""<div class="stage veil">
   </section>
   <section class="chapter" data-species="Chickens" data-mode="flag" data-flag="A" data-veil="1">
     <div class="card"><div class="kk">Chapter 1 <span>Flag A</span></div>
-      <h2>Half the world's chickens are behind an official count.</h2>
+      <h2>Half the world's chickens are officially counted.</h2>
       <div class="num">51.0<small>per cent</small></div>
-      <p>87 of 184 reporting areas filed an official national figure for chickens. On the map they are solid ink. Everything else is another colour.</p></div>
+      <p>87 of the 184 countries that filed a chicken figure filed an official national count, drawn here in near-black while the rest fade back.</p></div>
   </section>
   <section class="chapter" data-species="Chickens" data-mode="flag" data-flag="I" data-zoom="1270,210,2.2">
     <div class="card"><div class="kk">Chapter 2 <span>Flag I</span></div>
-      <h2>Forty per cent were never counted. The FAO imputed them.</h2>
+      <h2>For forty per cent, the FAO supplied the number.</h2>
       <div class="num">40.3<small>per cent</small></div>
-      <p>78 areas, flagged I. The largest single block is China, which has not filed a chicken figure the FAO could publish as official. Amber is the one colour on this map.</p></div>
+      <p>78 countries carry the imputed flag, in amber. The biggest single block is China, whose last official chicken count was in 1992.</p></div>
   </section>
   <section class="chapter" data-species="Cattle" data-mode="flag" data-flag="A" data-zoom="560,330,1.5">
     <div class="card"><div class="kk">Chapter 3 <span>Cattle</span></div>
-      <h2>Cattle are counted. Chickens are guessed.</h2>
+      <h2>Cattle are counted. Chickens often are not.</h2>
       <div class="num">74.3<small>per cent official</small></div>
-      <p>Switch species and the ink spreads. Cattle are censused animals in most of the world; birds are not. The same country can be ink for one species and amber for the next.</p></div>
+      <p>Switch to cattle and most of the map turns near-black. Cattle get censused in most of the world; poultry does not. The same country can be official for one species and imputed for the next.</p></div>
   </section>
   <section class="chapter" data-species="Chickens" data-mode="both" data-zoom="880,240,2.4">
     <div class="card"><div class="kk">Chapter 4 <span>Count and flag together</span></div>
-      <h2>Read the texture on top of the number.</h2>
+      <h2>Two things at once: how many, and where the number came from.</h2>
       <p>Colour is the head count on a log scale, one class per decade. The texture laid over a country is its flag: dots for a country estimate, a diagonal for an FAO imputation, a cross for an external source, and nothing at all for an official count. Europe files official figures at every scale, so most of it is plain; much of Africa's chicken count is a diagonal on a pale field.</p></div>
   </section>
   <section class="chapter" data-species="Chickens" data-mode="flag" data-flag="none" data-pulse="1" data-zoom="900,300,1.7">
     <div class="card"><div class="kk">Chapter 5 <span>No figure</span></div>
       <h2>Ten states filed nothing, and nothing was imputed.</h2>
       <div class="num">618<small>million birds outside the map</small></div>
-      <p>The pulsing areas have no 2022 chicken row at all. About 2.3 per cent of the FAO world total sits there. Including them at their nearest reported values, all official, would raise the official share to 52 per cent.</p></div>
+      <p>They pulse on the map. None has a 2022 chicken row at all, so about 2.3 per cent of the FAO world total sits outside every percentage on this page. Including them at their nearest reported values, all official, would raise the official share to 52 per cent.</p></div>
   </section>
   <section class="chapter explore" data-explore="1">
     <div class="card" id="explorecard"><div class="kk">Explore · now read it yourself <span>scroll to zoom · drag to pan · click a country for its five rows</span></div>
@@ -1029,7 +1060,7 @@ function show(path,ev){
     '<table><tr><th>Area</th><th>Item</th><th>Year</th><th>Value</th><th class="flag">Flag</th></tr>'+
     '<tr><td>'+esc(area||path.__n)+'</td><td>'+esc(species)+'</td><td>'+YEAR+'</td><td>'+(h!=null?Math.round(h).toLocaleString('en-AU'):'—')+'</td>'+
     '<td class="flag"><span>'+(COLOURS[f]?f:'—')+'</span></td></tr></table>'+
-    '<span class="h">'+(h!=null?fmtHead(h)+' '+unit(species)+'. ':'')+'The flag is the column downstream users drop.</span>';
+    '<span class="h">'+(h!=null?fmtHead(h)+' '+unit(species)+'.':'')+'</span>';
   tip.style.display='block';
   const r=stage.getBoundingClientRect();
   let x=ev.clientX-r.left+14, y=ev.clientY-r.top+14;
@@ -1067,10 +1098,35 @@ async function embeddedFont(){
 async function renderCanvas(scale){
   const fcss=await embeddedFont();
   return new Promise(function(resolve,reject){
-    const svg=$('map'), P=PROJS[proj], total=TOP+P.H+BOTTOM;
+    const svg=$('map'), P=PROJS[proj];
+    // The story page draws no header: its title and legend are HTML that sits beside the
+    // SVG, so a serialised clone was a bare world with nothing saying what the colours
+    // meant or which species it was. A downloaded PNG has to stand on its own, so when
+    // there is no header band the export builds one, using the same elements the figure
+    // page uses and the same layout.
+    const EXPORT_TOP=336, exTop=TOP||EXPORT_TOP, total=exTop+P.H+BOTTOM;
     const clone=svg.cloneNode(true);
     if(fcss){ const fs=document.createElementNS(svgNS,'style'); fs.textContent=fcss; clone.insertBefore(fs,clone.firstChild); }
     clone.querySelectorAll('.hover').forEach(function(e){e.classList.remove('hover');});
+    if(!TOP){
+      // Push the drawing down to clear the band, then fill it. The clip path is
+      // userSpaceOnUse and is referenced from inside #plot, so it travels with it.
+      ['plot','rule'].forEach(function(id){
+        const el=clone.querySelector('#'+id);
+        if(el) el.setAttribute('transform','translate(0,'+exTop+')');
+      });
+      const bg=clone.querySelector('rect');
+      if(bg) bg.setAttribute('fill',GROUND);
+      const lg=clone.querySelector('#legend');
+      if(lg){ lg.removeAttribute('style'); lg.setAttribute('transform','translate(40,152)'); }
+      [['kick','k0',34],['sub','t2',84],['sub2','t3',114]].forEach(function(spec){
+        const src=$(spec[0]); if(!src) return;
+        const t=document.createElementNS(svgNS,'text');
+        t.setAttribute('class',spec[1]); t.setAttribute('x',40); t.setAttribute('y',spec[2]);
+        t.textContent=src.textContent;
+        clone.insertBefore(t,clone.querySelector('#legend'));
+      });
+    }
     // In the export the stroke should scale with the render size; non-scaling-stroke would
     // pin it to a fraction of a device pixel in a 4800 px image and alias away.
     const ov=document.createElementNS(svgNS,'style');
@@ -1182,8 +1238,15 @@ const io=new IntersectionObserver(function(es){
 chapters.forEach(function(c){io.observe(c);});
 // explore: engage full pointer control once the last chapter is reached
 const ioX=new IntersectionObserver(function(es){ es.forEach(function(e){ document.body.classList.toggle('explore', e.isIntersecting && e.intersectionRatio>.9); }); },{threshold:[.9]});
-function exploreH(){ document.documentElement.style.setProperty('--explore-h', $('explorecard').offsetHeight+'px'); }
-window.addEventListener('resize',exploreH); exploreH(); new ResizeObserver(exploreH).observe($('explorecard'));
+// The card's height lifts the legend and zoom controls clear of the explore toolbar.
+// Guarded because a ResizeObserver can fire once more while the page is being torn
+// down, after the element has been detached, which threw an uncaught TypeError on
+// every load. Nothing broke, since the value had already been set, but a published
+// page should not log an error.
+function exploreH(){ const c=$('explorecard'); if(!c) return;
+  document.documentElement.style.setProperty('--explore-h', c.offsetHeight+'px'); }
+window.addEventListener('resize',exploreH); exploreH();
+if($('explorecard')) new ResizeObserver(exploreH).observe($('explorecard'));
 $('again').addEventListener('click',function(){ $('drillx').click(); window.scrollTo({top:0,behavior:'smooth'}); });
 ioX.observe(document.querySelector('.chapter.explore'));
 // counter

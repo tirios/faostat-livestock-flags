@@ -8,6 +8,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Schibsted+Grotesk:wght@400;500;600&display=swap">
 <style>
+  .topnav{display:flex; align-items:center; gap:var(--space-6); flex-wrap:wrap;
+    padding:var(--space-3) var(--space-6); border-bottom:1px solid var(--color-divider);
+    font-size:11px; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;}
+  .topnav b{font-weight:600;}
+  .navlinks{display:flex; gap:var(--space-5); flex-wrap:wrap; margin-left:auto;}
+  .navlinks a{color:color-mix(in srgb,var(--color-text) 62%,transparent); text-decoration:none;}
+  .navlinks a:hover{color:var(--color-text);}
   :root{
     --color-bg:#FFFFFF; --color-text:#141618; --color-accent:#0F766E; --accent-deep:#0A4F49;
     --color-divider:#C4C9CC;
@@ -82,6 +89,7 @@
 </style>
 </head>
 <body>
+<div class="topnav"><b>Livestock provenance</b><span class="navlinks"></span></div>
 <div class="wrap">
   <div class="bar">
     <div class="tabs" id="tabs" role="group" aria-label="Species"></div>
@@ -436,7 +444,7 @@ function show(path,ev){
     '<table><tr><th>Area</th><th>Item</th><th>Year</th><th>Value</th><th class="flag">Flag</th></tr>'+
     '<tr><td>'+esc(area||path.__n)+'</td><td>'+esc(species)+'</td><td>'+YEAR+'</td><td>'+(h!=null?Math.round(h).toLocaleString('en-AU'):'—')+'</td>'+
     '<td class="flag"><span>'+(COLOURS[f]?f:'—')+'</span></td></tr></table>'+
-    '<span class="h">'+(h!=null?fmtHead(h)+' '+unit(species)+'. ':'')+'The flag is the column downstream users drop.</span>';
+    '<span class="h">'+(h!=null?fmtHead(h)+' '+unit(species)+'.':'')+'</span>';
   tip.style.display='block';
   const r=stage.getBoundingClientRect();
   let x=ev.clientX-r.left+14, y=ev.clientY-r.top+14;
@@ -474,10 +482,35 @@ async function embeddedFont(){
 async function renderCanvas(scale){
   const fcss=await embeddedFont();
   return new Promise(function(resolve,reject){
-    const svg=$('map'), P=PROJS[proj], total=TOP+P.H+BOTTOM;
+    const svg=$('map'), P=PROJS[proj];
+    // The story page draws no header: its title and legend are HTML that sits beside the
+    // SVG, so a serialised clone was a bare world with nothing saying what the colours
+    // meant or which species it was. A downloaded PNG has to stand on its own, so when
+    // there is no header band the export builds one, using the same elements the figure
+    // page uses and the same layout.
+    const EXPORT_TOP=336, exTop=TOP||EXPORT_TOP, total=exTop+P.H+BOTTOM;
     const clone=svg.cloneNode(true);
     if(fcss){ const fs=document.createElementNS(svgNS,'style'); fs.textContent=fcss; clone.insertBefore(fs,clone.firstChild); }
     clone.querySelectorAll('.hover').forEach(function(e){e.classList.remove('hover');});
+    if(!TOP){
+      // Push the drawing down to clear the band, then fill it. The clip path is
+      // userSpaceOnUse and is referenced from inside #plot, so it travels with it.
+      ['plot','rule'].forEach(function(id){
+        const el=clone.querySelector('#'+id);
+        if(el) el.setAttribute('transform','translate(0,'+exTop+')');
+      });
+      const bg=clone.querySelector('rect');
+      if(bg) bg.setAttribute('fill',GROUND);
+      const lg=clone.querySelector('#legend');
+      if(lg){ lg.removeAttribute('style'); lg.setAttribute('transform','translate(40,152)'); }
+      [['kick','k0',34],['sub','t2',84],['sub2','t3',114]].forEach(function(spec){
+        const src=$(spec[0]); if(!src) return;
+        const t=document.createElementNS(svgNS,'text');
+        t.setAttribute('class',spec[1]); t.setAttribute('x',40); t.setAttribute('y',spec[2]);
+        t.textContent=src.textContent;
+        clone.insertBefore(t,clone.querySelector('#legend'));
+      });
+    }
     // In the export the stroke should scale with the render size; non-scaling-stroke would
     // pin it to a fraction of a device pixel in a 4800 px image and alias away.
     const ov=document.createElementNS(svgNS,'style');
