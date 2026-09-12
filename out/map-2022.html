@@ -410,7 +410,16 @@ function zoomAt(px,py,factor){
   applyZoom(); paint();
 }
 $('map').addEventListener('wheel',function(ev){
-  if(!explore) return;
+  // The wheel is how the page scrolls, so the map may only take it once the page has
+  // actually stopped scrolling. 'explore' turns true when the last chapter is 55 per
+  // cent visible, but the toolbar sits at the bottom of a full-height section and is
+  // still below the fold at that point, and body.explore (the scroll lock) does not
+  // arrive until 90 per cent. In that gap the map ate the wheel while the page could
+  // still have scrolled, so the reader was stranded with the toolbar out of reach and
+  // no way down unless they found the few pixels of page outside a full-bleed map.
+  // Zoom therefore waits for the lock. The figure page has no lock and no observer,
+  // so it keeps the original condition.
+  if(!(STORY ? document.body.classList.contains('explore') : explore)) return;
   const p=svgPoint(ev);
   if(p.y<0||p.y>p.H) return;      // only over the map itself, not the title or the note
   ev.preventDefault();

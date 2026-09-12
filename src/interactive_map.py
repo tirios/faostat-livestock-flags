@@ -1026,7 +1026,16 @@ function zoomAt(px,py,factor){
   applyZoom(); paint();
 }
 $('map').addEventListener('wheel',function(ev){
-  if(!explore) return;
+  // The wheel is how the page scrolls, so the map may only take it once the page has
+  // actually stopped scrolling. 'explore' turns true when the last chapter is 55 per
+  // cent visible, but the toolbar sits at the bottom of a full-height section and is
+  // still below the fold at that point, and body.explore (the scroll lock) does not
+  // arrive until 90 per cent. In that gap the map ate the wheel while the page could
+  // still have scrolled, so the reader was stranded with the toolbar out of reach and
+  // no way down unless they found the few pixels of page outside a full-bleed map.
+  // Zoom therefore waits for the lock. The figure page has no lock and no observer,
+  // so it keeps the original condition.
+  if(!(STORY ? document.body.classList.contains('explore') : explore)) return;
   const p=svgPoint(ev);
   if(p.y<0||p.y>p.H) return;      // only over the map itself, not the title or the note
   ev.preventDefault();
@@ -1237,7 +1246,25 @@ const io=new IntersectionObserver(function(es){
 },{threshold:.55});
 chapters.forEach(function(c){io.observe(c);});
 // explore: engage full pointer control once the last chapter is reached
-const ioX=new IntersectionObserver(function(es){ es.forEach(function(e){ document.body.classList.toggle('explore', e.isIntersecting && e.intersectionRatio>.9); }); },{threshold:[.9]});
+// Arrival at the last chapter, which is what grants the map the wheel and locks the page.
+// This used to ask for an intersection ratio above .9, which is unreachable whenever the
+// section is taller than the viewport: at 806px in a 720px window the ratio tops out at
+// .893, so the lock never engaged and "scroll to zoom" on the card was never true. The
+// test is now whether the foot of the section is on screen, which is exactly "the reader
+// has arrived" and does not depend on the section fitting.
+function atFoot(){
+  const s=document.querySelector('.chapter.explore');
+  if(!s) return false;
+  const r=s.getBoundingClientRect();
+  return r.top < window.innerHeight && r.bottom <= window.innerHeight + 2;
+}
+// Called straight from the scroll listener rather than through requestAnimationFrame.
+// The work is one getBoundingClientRect and a class toggle, so there is nothing to
+// throttle, and rAF is throttled hard in some embedded browsers: a version of this
+// behind rAF simply never ran there, so arrival was never detected.
+function syncExplore(){ document.body.classList.toggle('explore', atFoot()); }
+window.addEventListener('scroll',syncExplore,{passive:true});
+window.addEventListener('resize',syncExplore);
 // The card's height lifts the legend and zoom controls clear of the explore toolbar.
 // Guarded because a ResizeObserver can fire once more while the page is being torn
 // down, after the element has been detached, which threw an uncaught TypeError on
@@ -1248,7 +1275,7 @@ function exploreH(){ const c=$('explorecard'); if(!c) return;
 window.addEventListener('resize',exploreH); exploreH();
 if($('explorecard')) new ResizeObserver(exploreH).observe($('explorecard'));
 $('again').addEventListener('click',function(){ $('drillx').click(); window.scrollTo({top:0,behavior:'smooth'}); });
-ioX.observe(document.querySelector('.chapter.explore'));
+syncExplore();
 // counter
 (function(){ const t0=performance.now(), target=SUMMARY.Chickens.head_billions, el=$('ctr');
   function step(t){ const p=Math.min(1,(t-t0)/1800), e=1-Math.pow(1-p,3); el.textContent=(target*e).toFixed(2); if(p<1) requestAnimationFrame(step); }
