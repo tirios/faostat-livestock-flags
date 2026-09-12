@@ -1,0 +1,1449 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>animal-numbers: spot-check page</title>
+<style>
+:root{
+  --A:#0b4f9e; --E:#8fbde3; --I:#e07a3f; --X:#111111; --none:#ededed;
+  --ink:#1a1a1a; --mute:#6a6a6a; --faint:#8a8a8a; --rule:#e2e2e2; --bg:#fbfbfa;
+  --pass:#1f7a44; --fail:#b4453c; --panel:#ffffff;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+a{color:var(--A)}
+.wrap{max-width:1320px;margin:0 auto;padding:0 26px 120px}
+h1{font-size:23px;font-weight:600;margin:26px 0 4px;letter-spacing:-.2px}
+h2{font-size:16px;font-weight:600;margin:0 0 4px;letter-spacing:-.1px}
+h3{font-size:13px;font-weight:600;margin:18px 0 6px;color:var(--ink)}
+p{margin:6px 0}
+.sub{color:var(--mute);max-width:88ch}
+.faint{color:var(--faint)}
+.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,"DejaVu Sans Mono",monospace;font-size:12px}
+section{background:var(--panel);border:1px solid var(--rule);border-radius:5px;
+  padding:18px 20px 22px;margin:16px 0}
+.sechead{display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--rule);
+  padding-bottom:9px;margin-bottom:12px}
+.sechead .num{color:var(--faint);font-weight:600;font-size:12px;min-width:16px}
+.sechead .looking{margin-left:auto;color:var(--faint);font-size:12px;text-align:right;max-width:52ch}
+nav{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--rule);
+  padding:8px 26px;display:flex;flex-wrap:wrap;gap:2px;align-items:center}
+nav a{color:var(--mute);text-decoration:none;padding:3px 8px;border-radius:3px;font-size:12px}
+nav a:hover{background:#eee;color:var(--ink)}
+nav a.key{color:var(--I);font-weight:600}
+table{border-collapse:collapse;width:100%;font-size:12px}
+th,td{text-align:left;padding:4px 9px 4px 0;border-bottom:1px solid #f0f0f0;vertical-align:top}
+th{color:var(--mute);font-weight:600;white-space:nowrap;border-bottom:1px solid var(--rule);
+  position:sticky;top:37px;background:var(--panel)}
+th.s{cursor:pointer;user-select:none}
+th.s:hover{color:var(--ink)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;padding-right:14px}
+tbody tr:hover{background:#fafaf8}
+.scroll{max-height:520px;overflow:auto;border:1px solid var(--rule);border-radius:4px;padding:0 10px}
+.scroll table th{top:0}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0 12px}
+label.f{color:var(--mute);font-size:12px;display:flex;align-items:center;gap:5px}
+select,input[type=text],input[type=search]{font:inherit;font-size:12px;padding:3px 6px;
+  border:1px solid #ccc;border-radius:3px;background:#fff;color:var(--ink)}
+input[type=search]{min-width:190px}
+button{font:inherit;font-size:12px;padding:3px 10px;border:1px solid #ccc;border-radius:3px;
+  background:#fff;color:var(--ink);cursor:pointer}
+button:hover{background:#f2f2f2}
+button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;
+  margin-right:5px;border:1px solid rgba(0,0,0,.12)}
+.pass{color:var(--pass);font-weight:600}
+.fail{color:var(--fail);font-weight:600}
+.na{color:var(--faint);font-weight:600}
+tr.failrow{background:#fdf3f2}
+tr.failrow:hover{background:#fbe9e7}
+.banner{background:#b4453c;color:#fff;padding:11px 16px;border-radius:4px;margin:14px 0;
+  font-weight:600}
+.banner span{display:block;font-weight:400;opacity:.92;margin-top:3px}
+.prov{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:2px 22px;
+  margin:12px 0 4px;font-size:12px}
+.prov div{padding:3px 0;border-bottom:1px solid #f4f4f4}
+.prov b{color:var(--mute);font-weight:600;display:block;font-size:11px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:8px 0 2px;font-size:12px;color:var(--mute)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:1000px){.grid2,.grid3{grid-template-columns:1fr}}
+.note{background:#f7f7f5;border-left:3px solid var(--rule);padding:8px 12px;margin:10px 0;
+  color:var(--mute);font-size:12px;max-width:96ch}
+.note b{color:var(--ink)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.card{border:1px solid var(--rule);border-radius:4px;padding:10px 12px}
+.card h4{margin:0 0 2px;font-size:12.5px;font-weight:600}
+.big{font-size:19px;font-variant-numeric:tabular-nums}
+.click{cursor:pointer;text-decoration:underline;text-decoration-color:#ccc;
+  text-underline-offset:2px}
+.click:hover{text-decoration-color:var(--ink)}
+.stagerow{cursor:pointer}
+.stagerow.sel{background:#f2f6fb}
+.tick{color:var(--A);font-weight:700}
+.cross{color:var(--none);font-weight:700}
+.cellpct{padding:3px 7px;border-radius:3px;display:inline-block;min-width:58px;text-align:right;
+  font-variant-numeric:tabular-nums;cursor:pointer}
+svg{display:block}
+.chartbox{border:1px solid var(--rule);border-radius:4px;padding:6px 8px 2px}
+.chartbox h4{margin:0 0 2px;font-size:12px;font-weight:600}
+.chartbox .cap{font-size:11px;color:var(--faint);margin:0 0 2px}
+footer{color:var(--faint);font-size:12px;margin:30px 0 0;max-width:96ch}
+</style>
+</head>
+<body>
+
+<nav id="nav"></nav>
+
+<div class="wrap">
+
+<h1>Spot-check page for the FAOSTAT flag audit</h1>
+<p class="sub">This is a local checking tool for <span class="mono">out/map-2022.png</span> and
+<span class="mono">out/reporting-lag.png</span>, built from the same
+<span class="mono">out/stocks.csv.gz</span> and the same raw archive. It answers one question:
+does the map faithfully represent the source, and where would I notice if it did not. The
+assertions in <span class="mono">src/build_table.py</span> and <span class="mono">src/draw_map.py</span>
+are the record; this page recomputes them in the browser, it does not replace them. Every number
+below is computed from the embedded data at load. Nothing is pre-aggregated, so every count
+clicks through to the rows behind it.</p>
+
+<div id="breakbanner"></div>
+
+<section id="s0">
+  <div class="sechead"><span class="num">0</span><h2>Provenance and self-check</h2>
+    <span class="looking">Each row recomputes a quantity from the embedded data and compares it
+      with the canonical value in out/numbers.json. Red is the point of the table.</span></div>
+  <div class="prov" id="prov"></div>
+  <div class="legend" id="flaglegend"></div>
+  <div id="checks"></div>
+  <div class="note" id="breaknote"></div>
+</section>
+
+<section id="s1">
+  <div class="sechead"><span class="num">1</span><h2>The filter funnel</h2>
+    <span class="looking">A real country in the defunct list, a fourth name in the composite-item
+      stage, a blank-value row whose flag is not M, an off-diagonal cell in the unit crosstab,
+      or China's four parts failing to sum to the composite row.</span></div>
+  <p class="sub">Sequential counts: a row removed as an aggregate is not counted again as a
+    composite item. The standalone column is how many rows each rule matches on its own, and the
+    two differ where rules overlap. Click a stage to read the rows it removed.</p>
+  <div class="controls">
+    <label class="f">Year <select id="fn-year"></select></label>
+    <span class="faint" id="fn-yearnote"></span>
+  </div>
+  <div class="grid2">
+    <div>
+      <h3>Whole file</h3>
+      <div id="fn-all"></div>
+    </div>
+    <div>
+      <h3 id="fn-yearhead">Selected year</h3>
+      <div id="fn-yr"></div>
+    </div>
+  </div>
+  <div id="fn-drill"></div>
+  <div class="grid2" style="margin-top:20px">
+    <div>
+      <h3>Element by unit: this must be diagonal</h3>
+      <p class="faint">Element 5112 is filed in thousands of head. If the mapping were not
+        one to one, the times-1000 scaling would hit the wrong rows and throw no error.</p>
+      <div id="fn-unit"></div>
+    </div>
+    <div>
+      <h3>China 351 against its four parts</h3>
+      <p class="faint">The composite row and the sum of mainland, Hong Kong, Macao and Taiwan for
+        the selected year. A non-zero difference means the composite is not what the filter
+        assumes it is.</p>
+      <div id="fn-china"></div>
+    </div>
+  </div>
+</section>
+
+<section id="s2">
+  <div class="sechead"><span class="num">2</span><h2>Rows as filed: country and species lookup</h2>
+    <span class="looking">A 1000 An row whose filed value already looks like a head count, a flag
+      outside A E I X, two rows with the same area, item and year, or a value and a head that do
+      not stand in the right ratio.</span></div>
+  <p class="sub">The kept table, exactly as it sits in out/stocks.csv.gz. Value as filed and head
+    after normalisation are always shown side by side, because hiding the filed value is how the
+    thousands trap becomes invisible. Click an area to open its card in panel 3.</p>
+  <div class="controls">
+    <label class="f">Year <select id="rw-year"></select></label>
+    <label class="f">Species <select id="rw-item"></select></label>
+    <label class="f">Flag <select id="rw-flag"></select></label>
+    <label class="f">Area <input type="search" id="rw-q" placeholder="type a country"></label>
+    <span class="faint" id="rw-count"></span>
+  </div>
+  <div id="rw-table"></div>
+</section>
+
+<section id="s3">
+  <div class="sechead"><span class="num">3</span><h2>Drawn against source</h2>
+    <span class="looking">A geometry whose name has nothing to do with the FAO area it matched.
+      That is the view that would have caught Taiwan being drawn with the Dominican Republic's
+      data, and it is the first row of the table when you sort by name similarity.</span></div>
+  <p class="sub">One row per geometry per species, read from out/map-2022-drawn.csv, which
+    draw_map.py writes as it paints. The join key is the M49 code, so a wrong key produces a
+    perfectly consistent picture of the wrong country: the flag will agree with the source row it
+    matched, and the only thing out of place is the <b>name</b>. That is why the check that
+    matters here is name similarity and distinct areas drawn, not flag agreement.</p>
+  <div id="jn-summary" class="cards"></div>
+  <h3>(a) Matched pairs, least similar name first</h3>
+  <p class="faint">Similarity is a plain trigram overlap between the Natural Earth name and the
+    FAO area name. Legitimate pairs score low too (Natural Earth "China" against FAO
+    "China, mainland"), so the list is read, not thresholded.</p>
+  <div class="controls">
+    <label class="f"><input type="checkbox" id="jn-diff"> only rows where the names differ</label>
+    <label class="f">Species <select id="jn-species"></select></label>
+    <span class="faint" id="jn-count"></span>
+  </div>
+  <div id="jn-pairs"></div>
+  <div class="grid2" style="margin-top:20px">
+    <div><h3>(b) FAO areas with no geometry</h3>
+      <p class="faint">Must be empty. On the broken build it holds China, Taiwan Province of.</p>
+      <div id="jn-nogeo"></div></div>
+    <div><h3>(d) M49 keys carried by more than one geometry</h3>
+      <p class="faint">Must be empty apart from the sentinel. Two geometries on one key means one
+        country is about to be painted with another's data.</p>
+      <div id="jn-dupe"></div></div>
+  </div>
+  <h3>(c) Geometries with no FAO area</h3>
+  <p class="faint">These render grey on every panel. The sentinel rows are geometries Natural
+    Earth does not give a UN code at all; two of them are given one by hand in draw_map.py.</p>
+  <div id="jn-nofao"></div>
+  <h3>Drawn flag against source flag, all geometry-species rows</h3>
+  <div id="jn-diffs"></div>
+</section>
+
+<section id="s4">
+  <div class="sechead"><span class="num">4</span><h2>Reconciliation to the FAO's own World row</h2>
+    <span class="looking">A non-zero difference in a species that used to reconcile at zero, which
+      would mean a filter stage started removing a real country or an aggregate leaked in.</span></div>
+  <p class="sub">The country sum from the kept table against FAOSTAT's published World row, which
+    the pipeline never uses as an input. The World row is a comparison, never a denominator.
+    Click any cell for the areas with a series but no row in that year.</p>
+  <div id="rc-grid"></div>
+  <div id="rc-detail"></div>
+</section>
+
+<section id="s5">
+  <div class="sechead"><span class="num">5</span><h2>Flag composition over time</h2>
+    <span class="looking">Any series drawn across 2014 to 2015 without the rule, and the
+      recomputed lag numbers failing to match the shipped out/reporting-lag.csv to the
+      decimal.</span></div>
+  <p class="sub">The FAO reclassified its own estimated and imputed labels between 2014 and 2015.
+    Across that break the estimated share falls from about 24 per cent to 8 and the imputed share
+    rises from 3 to 38, which reads as a collapse in data quality and is a change of vocabulary.
+    The rule is drawn on every axis on this page for that reason.</p>
+  <div class="controls">
+    <label class="f">Species <select id="fc-species"></select></label>
+    <label class="f">Weight
+      <button id="fc-w-head" class="on">by animals</button><button id="fc-w-rows">by rows</button>
+    </label>
+    <label class="f">From
+      <button id="fc-r-2010" class="on">2010</button><button id="fc-r-1961">1961</button>
+    </label>
+  </div>
+  <div id="fc-chart"></div>
+  <div id="fc-table"></div>
+  <h3>Reporting lag, both denominators</h3>
+  <p class="sub">lag_panel.py computes the per-country official share over whatever species each
+    country happens to report; the adversarial review asked for it restricted to countries
+    reporting all five. The two series differ and neither is picked silently here. Recomputed
+    values are shown beside the shipped CSV; any disagreement is flagged.</p>
+  <div id="fc-lag"></div>
+</section>
+
+<section id="s6">
+  <div class="sechead"><span class="num">6</span><h2>One country, all years</h2>
+    <span class="looking">A switch from official to imputed, an imputed value that is an exact
+      copy of the previous year, a series that jumps in value across the 2015 rule, or a country
+      whose rows exist but whose geometry block says no geometry.</span></div>
+  <div class="controls">
+    <label class="f">Country <select id="cc-area"></select></label>
+    <label class="f">From
+      <button id="cc-r-2010" class="on">2010</button><button id="cc-r-1961">1961</button>
+    </label>
+  </div>
+  <div class="grid3" id="cc-charts"></div>
+  <div class="grid2" style="margin-top:18px">
+    <div><h3>What the map painted for this country</h3>
+      <div id="cc-map"></div></div>
+    <div><h3>Switches from official to imputed</h3>
+      <p class="faint">The ratio is the imputed value over the last official one. A ratio of
+        exactly 1.000 would mean the value was carried forward, which is not what the FAO does
+        here.</p>
+      <div id="cc-switch"></div></div>
+  </div>
+  <h3>Every core row for this country</h3>
+  <div id="cc-rows"></div>
+</section>
+
+<section id="s7">
+  <div class="sechead"><span class="num">7</span><h2>Where the imputation is</h2>
+    <span class="looking">A top imputed row whose country card shows an official figure for the
+      same year, an X row that is not one of the nine, or the cumulative share failing to reach
+      100.</span></div>
+  <div class="controls">
+    <label class="f">Year <select id="im-year"></select></label>
+    <label class="f">Flag <select id="im-flag"></select></label>
+    <label class="f"><input type="checkbox" id="im-nochina"> exclude China mainland chickens</label>
+  </div>
+  <div id="im-head" class="cards"></div>
+  <div id="im-table"></div>
+</section>
+
+<section id="s8">
+  <div class="sechead"><span class="num">8</span><h2>Missing species and non-reporting areas</h2>
+    <span class="looking">A large producer missing a species it certainly farms, a gap country
+      appearing in the never-reported list, or the grey count on a panel failing to equal the two
+      lists plus the territories.</span></div>
+  <div class="controls">
+    <label class="f">Year <select id="ms-year"></select></label>
+    <span class="faint" id="ms-count"></span>
+  </div>
+  <div class="grid2">
+    <div><h3>Areas by species</h3><div id="ms-grid"></div></div>
+    <div><h3>Per species: which kind of blank</h3><div id="ms-lists"></div></div>
+  </div>
+  <h3>Natural Earth features that are not FAO reporting areas at all</h3>
+  <p class="faint">Grey on every panel in every year. They are not gaps in reporting; there is no
+    FAOSTAT area behind them.</p>
+  <div id="ms-terr"></div>
+</section>
+
+<footer>
+  <p>Built by <span class="mono">src/build_eda.py</span> from
+    <span class="mono">out/stocks.csv.gz</span>, the pinned raw archive, Natural Earth 50m
+    attributes and <span class="mono">out/numbers.json</span>. FAOSTAT data is CC BY 4.0.
+    The same observation-status flags are republished per country and per species by the
+    GBADs FAOSTAT Data Visualizer at gbadske.org, whose Flag Occurances view pools them
+    across all countries for one species as a yearly stacked bar. That view counts each
+    country once, so it says nothing about what share of the world's animals sits behind
+    each flag, and no GBADs view puts the flag on a map.</p>
+  <p>Parts of this project were drafted with LLM assistance. That is why the assertions in
+    the Python are the record and this page recomputes them independently: the checks are
+    the thing to trust, not the process that produced them.</p>
+</footer>
+
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+</script>
+<script>
+"use strict";
+(function(){
+
+/* ---------- primitives ---------- */
+const K=DATA.kept, D=DATA.drop, W=DATA.world, AREA=DATA.area, ITEM=DATA.item;
+const FL=DATA.flagOrder, NUM=DATA.numbers, META=DATA.meta;
+const ELEM=META.elements, UNITS=META.units;
+const COL={A:'#0b4f9e',E:'#8fbde3',I:'#e07a3f',X:'#111111',M:'#ededed'};
+const NONE='#ededed';
+const CORE=META.core, CORE_SRC=META.core_source;
+const NROW=K.a.length;
+
+const itemIdxByName={}; ITEM.name.forEach((n,i)=>{itemIdxByName[n]=i;});
+const areaIdxByName={}; AREA.name.forEach((n,i)=>{areaIdxByName[n]=i;});
+const CORE_II=CORE_SRC.map(n=>itemIdxByName[n]);
+const CORE_SET=new Set(CORE_II);
+const LABEL={}; CORE_SRC.forEach((n,i)=>{LABEL[n]=CORE[i];});
+const labelOf=i=>LABEL[ITEM.name[i]]||ITEM.name[i];
+
+const YEARS=[]; for(let y=1961;y<=2024;y++) YEARS.push(y);
+const hd=(B,r)=>B.v[r]===null?null:(B.e[r]===1?B.v[r]*1000:B.v[r]);
+const yr=(B,r)=>B.y[r]+1961;
+const fg=(B,r)=>B.f[r]<0?null:FL[B.f[r]];
+const an=(B,r)=>AREA.name[B.a[r]];
+const am=(B,r)=>AREA.m49[B.a[r]];
+const ac=(B,r)=>AREA.code[B.a[r]];
+const inm=(B,r)=>ITEM.name[B.i[r]];
+
+const fmt=(n,d)=>n===null||n===undefined||isNaN(n)?'—':
+  Number(n).toLocaleString('en-AU',{minimumFractionDigits:d||0,maximumFractionDigits:d||0});
+const f1=n=>fmt(n,1), f2=n=>fmt(n,2), f3=n=>fmt(n,3);
+const M=n=>n===null?'—':f1(n/1e6);
+const esc=s=>String(s===null||s===undefined?'':s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const sw=f=>'<span class="sw" style="background:'+(f&&COL[f]?COL[f]:NONE)+'"></span>';
+const el=id=>document.getElementById(id);
+
+/* ---------- generic sortable, paged table ---------- */
+function tbl(host, cols, rows, opt){
+  opt=opt||{};
+  if(typeof host==='string') host=el(host);
+  if(!host._s) host._s={k:opt.sort||null,d:opt.dir||-1,p:0};
+  const s=host._s;
+  let r=rows.slice();
+  if(s.k!==null){
+    const c=cols.find(c=>c.k===s.k);
+    if(c) r.sort((x,y)=>{
+      let a=x[s.k],b=y[s.k];
+      if(a===null||a===undefined)a=c.n?-Infinity:'';
+      if(b===null||b===undefined)b=c.n?-Infinity:'';
+      return (c.n? (a-b) : String(a).localeCompare(String(b)))*s.d;
+    });
+  }
+  const page=opt.page||400, np=Math.max(1,Math.ceil(r.length/page));
+  if(s.p>=np) s.p=0;
+  const view=r.slice(s.p*page,(s.p+1)*page);
+  let h='<div class="scroll"><table><thead><tr>';
+  cols.forEach(c=>{h+='<th class="s'+(c.n?' n':'')+'" data-k="'+esc(c.k)+'">'+esc(c.t)+
+    (s.k===c.k?(s.d>0?' ↑':' ↓'):'')+'</th>';});
+  h+='</tr></thead><tbody>';
+  view.forEach(row=>{
+    h+='<tr'+(row._cls?' class="'+row._cls+'"':'')+'>';
+    cols.forEach(c=>{h+='<td'+(c.n?' class="n"':'')+'>'+(c.r?c.r(row):esc(row[c.k]))+'</td>';});
+    h+='</tr>';
+  });
+  h+='</tbody></table></div>';
+  if(np>1) h+='<div class="controls"><button data-pg="-1">previous</button>'+
+    '<span class="faint">rows '+fmt(s.p*page+1)+' to '+fmt(Math.min(r.length,(s.p+1)*page))+
+    ' of '+fmt(r.length)+'</span><button data-pg="1">next</button></div>';
+  else h+='<p class="faint">'+fmt(r.length)+' rows</p>';
+  host.innerHTML=h;
+  host.querySelectorAll('th.s').forEach(th=>th.onclick=()=>{
+    const k=th.dataset.k; if(s.k===k) s.d=-s.d; else {s.k=k;s.d=-1;}
+    s.p=0; tbl(host,cols,rows,opt);});
+  host.querySelectorAll('[data-pg]').forEach(b=>b.onclick=()=>{
+    s.p=Math.max(0,Math.min(np-1,s.p+ +b.dataset.pg)); tbl(host,cols,rows,opt);});
+}
+function plain(cols,rows){
+  let h='<table><thead><tr>';
+  cols.forEach(c=>{h+='<th'+(c.n?' class="n"':'')+'>'+esc(c.t)+'</th>';});
+  h+='</tr></thead><tbody>';
+  rows.forEach(row=>{h+='<tr'+(row._cls?' class="'+row._cls+'"':'')+'>';
+    cols.forEach(c=>{h+='<td'+(c.n?' class="n"':'')+'>'+(c.r?c.r(row):esc(row[c.k]))+'</td>';});
+    h+='</tr>';});
+  return h+'</tbody></table>';
+}
+
+/* ---------- indexes over the kept table ---------- */
+const core2022=[], byYear={}, byArea={};
+for(let r=0;r<NROW;r++){
+  const y=yr(K,r);
+  (byYear[y]||(byYear[y]=[])).push(r);
+  (byArea[K.a[r]]||(byArea[K.a[r]]=[])).push(r);
+  if(y===META.year && CORE_SET.has(K.i[r])) core2022.push(r);
+}
+/* source flag by m49 + species, for the mapped year */
+const srcByKey={}; const srcAreaBySpecies={};
+core2022.forEach(r=>{
+  const key=am(K,r)+'|'+labelOf(K.i[r]);
+  srcByKey[key]={flag:fg(K,r),head:hd(K,r),area:an(K,r)};
+  const sp=labelOf(K.i[r]);
+  (srcAreaBySpecies[sp]||(srcAreaBySpecies[sp]=new Set())).add(am(K,r));
+});
+/* World rows */
+const worldByKey={};
+for(let r=0;r<W.i.length;r++){
+  const v=W.v[r]===null?null:(W.e[r]===1?W.v[r]*1000:W.v[r]);
+  worldByKey[ITEM.name[W.i[r]]+'|'+(W.y[r]+1961)]={head:v,flag:W.f[r]<0?null:FL[W.f[r]]};
+}
+
+function sumBy(rows,fn){let t=0;rows.forEach(r=>{const v=fn(r);if(v!==null)t+=v;});return t;}
+function speciesStats(year){
+  const out={};
+  CORE_SRC.forEach((sn,k)=>{
+    const ii=CORE_II[k], rs=(byYear[year]||[]).filter(r=>K.i[r]===ii);
+    const t=sumBy(rs,r=>hd(K,r));
+    const off=sumBy(rs.filter(r=>fg(K,r)==='A'),r=>hd(K,r));
+    out[CORE[k]]={rows:rs,head:t,official:off,
+      pctHead:t?off/t*100:NaN,
+      pctArea:rs.length?rs.filter(r=>fg(K,r)==='A').length/rs.length*100:NaN,
+      areas:new Set(rs.map(r=>K.a[r])).size};
+  });
+  return out;
+}
+const S22=speciesStats(META.year);
+const CORE22_TOTAL=sumBy(core2022,r=>hd(K,r));
+const flagHead22={}; 'AEIX'.split('').forEach(f=>{
+  flagHead22[f]=sumBy(core2022.filter(r=>fg(K,r)===f),r=>hd(K,r));});
+
+/* gap areas: a series for this species but no row in `year` */
+function gapAreas(itemName,year){
+  const ii=itemIdxByName[itemName], ever={}, now=new Set();
+  for(let r=0;r<NROW;r++){
+    if(K.i[r]!==ii) continue;
+    const a=K.a[r];
+    if(yr(K,r)===year) now.add(a);
+    if(!ever[a]) ever[a]=[]; ever[a].push(r);
+  }
+  const out=[];
+  Object.keys(ever).forEach(a=>{
+    if(now.has(+a)) return;
+    let best=null;
+    ever[a].forEach(r=>{if(best===null||Math.abs(yr(K,r)-year)<Math.abs(yr(K,best)-year)) best=r;});
+    out.push({area:AREA.name[+a],nearest:yr(K,best),head:hd(K,best),flag:fg(K,best)});
+  });
+  return out.sort((a,b)=>b.head-a.head);
+}
+const CHICK_GAP=gapAreas('Chickens',META.year);
+const CHICK_GAP_RECENT=CHICK_GAP.filter(g=>g.nearest>=2015);
+
+/* geometry ---------------------------------------------------------------- */
+const GEO=DATA.geo, DRAWN=DATA.drawn;
+const geoByM49={}; GEO.forEach(g=>{(geoByM49[g.m49]||(geoByM49[g.m49]=[])).push(g);});
+const faoM49All=new Set(); for(let r=0;r<NROW;r++) faoM49All.add(am(K,r));
+const dupM49=Object.keys(geoByM49).filter(k=>geoByM49[k].length>1 && k!==META.sentinel);
+const noGeo=[];
+Object.keys(srcAreaBySpecies).forEach(sp=>{
+  srcAreaBySpecies[sp].forEach(m=>{if(!geoByM49[m]) noGeo.push({species:sp,m49:m,
+    area:(srcByKey[m+'|'+sp]||{}).area});});
+});
+const noFao=GEO.filter(g=>!faoM49All.has(g.m49));
+
+function norm(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();}
+function tri(s){s=' '+norm(s)+' ';const o=new Set();for(let i=0;i<s.length-2;i++)o.add(s.slice(i,i+3));return o;}
+function sim(a,b){const A=tri(a),B=tri(b);if(!A.size||!B.size)return 0;let n=0;
+  A.forEach(x=>{if(B.has(x))n++;});return 2*n/(A.size+B.size);}
+
+/* ---------- nav ---------- */
+const NAVS=[['s0','Checks'],['s1','Funnel'],['s2','Rows'],['s3','Drawn vs source'],
+  ['s4','Reconciliation'],['s5','Flags over time'],['s6','Country'],['s7','Imputation'],
+  ['s8','Missing']];
+el('nav').innerHTML=NAVS.map(n=>'<a href="#'+n[0]+'"'+(n[0]==='s3'?' class="key"':'')+'>'+
+  n[1]+'</a>').join('');
+
+/* ---------- panel 0: provenance, legend, checks ---------- */
+(function(){
+  const m=META.manifest;
+  const prov=[
+    ['Database','FAOSTAT Production: Crops and livestock products (QCL)'],
+    ['Release','2025-12-31 (pinned)'],
+    ['Archive','qcl_2025-12-31.zip, '+fmt(m.bytes)+' bytes'],
+    ['SHA-256','<span class="mono" style="word-break:break-all">'+esc(m.sha256)+'</span>'],
+    ['Fetched',esc(m.fetched)],
+    ['Licence','CC BY 4.0'],
+    ['Geometry',esc(META.geometry)],
+    ['Rows in file',fmt(META.rows_in_file)],
+    ['Rows kept',fmt(NROW)],
+    ['Year mapped',META.year],
+    ['Page built',esc(META.built)],
+    ['Build',META['break']?('<span class="fail">BROKEN ('+esc(META['break'])+')</span>'):'normal'],
+  ];
+  el('prov').innerHTML=prov.map(p=>'<div><b>'+p[0]+'</b>'+p[1]+'</div>').join('');
+
+  el('flaglegend').innerHTML='<b style="color:var(--mute)">Flags:</b>'+
+    'AEIXM'.split('').map(f=>sw(f)+esc(f)+' &middot; '+esc(DATA.flagWords[f])+
+    ' <span class="faint">(FAO: '+esc(DATA.faoFlags[f]||'')+')</span>').join('');
+
+  if(META['break']){
+    const what=META['break']==='taiwan'
+      ? "Taiwan's geometry is keyed on M49 214, which is the Dominican Republic's code and Taiwan's FAOSTAT area code. This is the defect adversarial review found on 2026-09-06."
+      : "Brazil's 2022 cattle value has been multiplied by 1.1 in the embedded data.";
+    el('breakbanner').innerHTML='<div class="banner">This page was built from a deliberately '+
+      'broken input.<span>'+esc(what)+' Nothing on this page describes the shipped map. '+
+      'Delete this file when you have read the check table.</span></div>';
+  }
+})();
+
+/* the check table -------------------------------------------------------- */
+function runChecks(){
+  const C=[];
+  const add=(g,what,got,want,ok,note)=>C.push({g:g,what:what,got:got,want:want,ok:ok,note:note||''});
+  const near=(a,b,tol)=>Math.abs(a-b)<=tol;
+
+  /* pipeline */
+  add('Pipeline','Rows in the release file',fmt(META.rows_in_file),fmt(NUM.pipeline.rows_in_file),
+      META.rows_in_file===NUM.pipeline.rows_in_file);
+  const fnl=DATA.funnel, elemRow=fnl.find(f=>f.key==='element');
+  add('Pipeline','Stocks rows after the element filter',fmt(elemRow.remaining),
+      fmt(NUM.pipeline.rows_after_element_filter),
+      elemRow.remaining===NUM.pipeline.rows_after_element_filter);
+  const removed=fnl.filter(f=>f.removed!==null).reduce((a,f)=>a+f.removed,0);
+  add('Pipeline','The funnel closes: stocks rows minus every stage equals rows kept',
+      fmt(elemRow.remaining-removed),fmt(NROW),elemRow.remaining-removed===NROW,
+      fmt(removed)+' removed across five stages');
+  add('Pipeline','Rows kept',fmt(NROW),fmt(NUM.pipeline.rows_out),NROW===NUM.pipeline.rows_out);
+  let dup=0; {const seen=new Set();
+    for(let r=0;r<NROW;r++){const k=K.a[r]+'|'+K.i[r]+'|'+K.y[r]; if(seen.has(k))dup++; else seen.add(k);}}
+  add('Pipeline','Area, item and year is unique',fmt(dup),'0',dup===0);
+  const badFlags=new Set(); for(let r=0;r<NROW;r++){const f=fg(K,r); if('AEIX'.indexOf(f)<0) badFlags.add(f);}
+  add('Pipeline','Flags are a subset of A, E, I and X',
+      badFlags.size?[...badFlags].join(', '):'none','none',badFlags.size===0);
+  const cross={}; for(let r=0;r<NROW;r++){const k=ELEM[K.e[r]]+'|'+UNITS[K.e[r]];cross[k]=(cross[k]||0)+1;}
+  let offdiag=0; {const seen={}; for(let r=0;r<NROW;r++){(seen[ELEM[K.e[r]]]||(seen[ELEM[K.e[r]]]=new Set())).add(K.e[r]);}
+    Object.keys(seen).forEach(k=>{if(seen[k].size>1)offdiag++;});}
+  add('Pipeline','Element to unit is strictly one to one',offdiag?'no':'yes','yes',offdiag===0,
+      ELEM.map((e,i)=>e+' '+UNITS[i]).join(', '));
+
+  /* known targets */
+  const y24=byYear[2024]||[];
+  const ch24=sumBy(y24.filter(r=>inm(K,r)==='Chickens'),r=>hd(K,r));
+  add('Known targets','2024 world chickens between 26 and 27 billion',f2(ch24/1e9)+' bn',
+      '26 to 27 bn',ch24>26e9&&ch24<27e9);
+  const poul=['Chickens','Ducks','Geese','Turkeys','Other birds'];
+  const po24=sumBy(y24.filter(r=>poul.indexOf(inm(K,r))>=0),r=>hd(K,r));
+  add('Known targets','2024 world poultry',f2(po24/1e9)+' bn','28.75 bn +/- 0.02',
+      near(po24/1e9,28.75,0.02));
+  add('Known targets','2022 core rows',fmt(core2022.length),fmt(NUM.pipeline.core_rows_year),
+      core2022.length===NUM.pipeline.core_rows_year);
+  const areas22=new Set(core2022.map(r=>K.a[r])).size;
+  add('Known targets','2022 reporting areas',fmt(areas22),fmt(NUM.pipeline.reporting_areas_year),
+      areas22===NUM.pipeline.reporting_areas_year);
+
+  /* headline */
+  add('Headline 2022','Total head across the five species',f1(CORE22_TOTAL/1e6)+' M',
+      f1(NUM.headline.total_head_millions)+' M',
+      near(CORE22_TOTAL/1e6,NUM.headline.total_head_millions,0.05));
+  [['A','pct_official'],['E','pct_country_estimate'],['I','pct_fao_imputed'],
+   ['X','pct_external']].forEach(p=>{
+    const got=flagHead22[p[0]]/CORE22_TOTAL*100, want=NUM.headline[p[1]];
+    add('Headline 2022','Share of animals flagged '+p[0]+', by head',f2(got)+' %',f2(want)+' %',
+        near(got,want,0.005));
+  });
+  const chShare=S22.Chickens.head/CORE22_TOTAL*100;
+  add('Headline 2022','Chickens as a share of the five species',f1(chShare)+' %',
+      f1(NUM.headline.chickens_share_of_set)+' %',
+      near(chShare,NUM.headline.chickens_share_of_set,0.05));
+  CORE.forEach(sp=>{
+    const got=S22[sp].pctHead, want=NUM.by_species[sp].pct_official_by_head;
+    add('Headline 2022',sp+': share of animals behind an official figure',f1(got)+' %',
+        f1(want)+' %',near(got,want,0.05));
+  });
+  CORE.forEach(sp=>{
+    const got=S22[sp].pctArea, want=NUM.by_species[sp].pct_official_by_area;
+    add('Headline 2022',sp+': share of reporting areas official',f1(got)+' %',f1(want)+' %',
+        near(got,want,0.05));
+  });
+
+  /* reconciliation */
+  CORE_SRC.forEach((sn,k)=>{
+    const sp=CORE[k], w=worldByKey[sn+'|'+META.year];
+    const got=w&&w.head?(S22[sp].head-w.head)/w.head*100:NaN;
+    const want=NUM.by_species[sp].pct_diff_vs_fao_world;
+    add('Reconciliation',sp+' against the FAO World row',f2(got)+' %',f2(want)+' %',
+        near(got,want,0.005),'World row '+M(w?w.head:null)+' M, flag '+(w?w.flag:'—'));
+  });
+  const gapHead=CHICK_GAP_RECENT.reduce((a,g)=>a+g.head,0);
+  add('Reconciliation','States with a chicken series but no '+META.year+' row',
+      fmt(CHICK_GAP_RECENT.length),fmt(NUM.reconciliation.chicken_gap_states),
+      CHICK_GAP_RECENT.length===NUM.reconciliation.chicken_gap_states,
+      CHICK_GAP_RECENT.map(g=>g.area).sort().join(', '));
+  add('Reconciliation','Their nearest-year head total',f1(gapHead/1e6)+' M',
+      f1(NUM.reconciliation.chicken_gap_head_millions)+' M',
+      near(gapHead/1e6,NUM.reconciliation.chicken_gap_head_millions,0.05));
+  const allA=CHICK_GAP_RECENT.every(g=>g.flag==='A');
+  add('Reconciliation','Every one of them is an official figure',allA?'yes':'no',
+      NUM.reconciliation.chicken_gap_all_official?'yes':'no',
+      allA===NUM.reconciliation.chicken_gap_all_official);
+  const chIncl=(S22.Chickens.official+gapHead)/(S22.Chickens.head+gapHead)*100;
+  add('Reconciliation','Chicken official share including those states',f1(chIncl)+' %',
+      f1(NUM.reconciliation.chicken_pct_official_including_gap)+' %',
+      near(chIncl,NUM.reconciliation.chicken_pct_official_including_gap,0.05));
+
+  /* concentration */
+  const impRows=core2022.filter(r=>fg(K,r)==='I');
+  const impHead=sumBy(impRows,r=>hd(K,r));
+  add('Concentration','Imputed head, five species',f1(impHead/1e6)+' M',
+      f1(NUM.concentration.imputed_head/1e6)+' M',
+      near(impHead/1e6,NUM.concentration.imputed_head/1e6,0.05));
+  const topImp=impRows.slice().sort((a,b)=>hd(K,b)-hd(K,a))[0];
+  const t3=NUM.concentration.top3[0];
+  add('Concentration','Largest imputed row',
+      an(K,topImp)+', '+labelOf(K.i[topImp]).toLowerCase()+', '+f2(hd(K,topImp)/1e9)+' bn',
+      t3.area+', '+t3.species.toLowerCase()+', '+f2(t3.head_billions)+' bn',
+      an(K,topImp)===t3.area&&near(hd(K,topImp)/1e9,t3.head_billions,0.005));
+  add('Concentration','That row as a share of all imputed animals',
+      f1(hd(K,topImp)/impHead*100)+' %',f1(t3.pct_of_imputed)+' %',
+      near(hd(K,topImp)/impHead*100,t3.pct_of_imputed,0.05));
+  const chinaIdx=areaIdxByName['China, mainland'], chIi=itemIdxByName['Chickens'];
+  const noCh=core2022.filter(r=>!(K.a[r]===chinaIdx&&K.i[r]===chIi));
+  const ncT=sumBy(noCh,r=>hd(K,r));
+  const ncA=sumBy(noCh.filter(r=>fg(K,r)==='A'),r=>hd(K,r))/ncT*100;
+  const ncI=sumBy(noCh.filter(r=>fg(K,r)==='I'),r=>hd(K,r))/ncT*100;
+  add('Concentration','Excluding China mainland chickens: official share',f1(ncA)+' %',
+      f1(NUM.concentration.excluding_china_chickens.pct_official)+' %',
+      near(ncA,NUM.concentration.excluding_china_chickens.pct_official,0.05));
+  add('Concentration','Excluding China mainland chickens: imputed share',f1(ncI)+' %',
+      f1(NUM.concentration.excluding_china_chickens.pct_imputed)+' %',
+      near(ncI,NUM.concentration.excluding_china_chickens.pct_imputed,0.05));
+
+  /* join and drawing */
+  const noGeoNames=[...new Set(noGeo.map(g=>g.area+' ('+g.m49+')'))];
+  add('Join and drawing','Every FAO area with a '+META.year+' core row has a geometry',
+      noGeoNames.length?noGeoNames.join(', '):'all matched','all matched',
+      noGeo.length===0,
+      noGeo.length?'Missing on all five panels; table (b) in panel 3 lists it per species.':'');
+  add('Join and drawing','No two non-sentinel geometries share an M49 code',
+      dupM49.length?dupM49.map(m=>m+': '+geoByM49[m].map(g=>g.n).join(' and ')).join('; '):'none',
+      'none',dupM49.length===0);
+  const drawnBySp={}; DRAWN.forEach(d=>{(drawnBySp[d.sp]||(drawnBySp[d.sp]=[])).push(d);});
+  let distinctBad=[];
+  CORE.forEach(sp=>{
+    const got=new Set((drawnBySp[sp]||[]).filter(d=>d.fa).map(d=>d.fa)).size;
+    const want=srcAreaBySpecies[sp].size;
+    if(got!==want) distinctBad.push(sp+' '+got+' of '+want);
+  });
+  add('Join and drawing','Distinct FAO areas actually drawn equals FAO rows in, per species',
+      distinctBad.length?distinctBad.join('; '):'equal on all five','equal on all five',
+      distinctBad.length===0,
+      'This is the discriminating count. A stolen match and a lost match cancel in a plain '+
+      'row count but not here.');
+  let flagMismatch=0;
+  DRAWN.forEach(d=>{
+    const s=srcByKey[d.m+'|'+d.sp];
+    const want=s?s.flag:null;
+    if((d.fl||null)!==(want||null)) flagMismatch++;
+  });
+  add('Join and drawing','Drawn flag equals the source flag for the key it matched',
+      fmt(flagMismatch)+' mismatches','0',flagMismatch===0,
+      'Passes on the broken build too: a wrong key draws the wrong country consistently. '+
+      'Read it with the two rows above, not on its own.');
+  add('Join and drawing','Drawn rows equal geometries times species',fmt(DRAWN.length),
+      fmt(GEO.length*CORE.length),DRAWN.length===GEO.length*CORE.length);
+  const cov=DATA.coverage;
+  const covEq=cov.every(c=>c.geo_matched===c.fao_rows_in);
+  C.push({g:'Join and drawing',what:'NOT A CHECK: geometries carrying a flag equals FAO rows in',
+    got:covEq?'equal on all five':'not equal',want:'equal on both the good and the broken build',
+    ok:null,
+    note:'This is the coverage column that could not see the Taiwan defect. One FAO row fails to '+
+      'match and one extra geometry claims another country’s row, so the count is identical '+
+      'either way. It is printed here to show that it is not evidence of a clean join.'});
+
+  /* lag */
+  [2022,2024].forEach(y=>{
+    const rec=lagRow(y), ship=DATA.lag.find(l=>l.year===y);
+    const ok=rec.full_reporters===ship.full_reporters && rec.zero_official===ship.zero_official
+      && rec.all_areas===ship.all_areas && rec.zero_official_any===ship.zero_official_any
+      && near(rec.animal_weighted,ship.animal_weighted_official,0.001);
+    add('Lag panel','Recomputed '+y+' lag row matches out/reporting-lag.csv',
+        rec.zero_official+' of '+rec.full_reporters+' at zero official, '+
+        rec.animal_weighted.toFixed(3)+' % animal-weighted',
+        ship.zero_official+' of '+ship.full_reporters+', '+
+        ship.animal_weighted_official.toFixed(3)+' %',ok,
+        'The animal-weighted share is compared to three decimal places, so a change too small '+
+        'to print at one decimal still turns this row red.');
+  });
+  return C;
+}
+function lagRow(y){
+  const rs=(byYear[y]||[]).filter(r=>CORE_SET.has(K.i[r]));
+  const bya={};
+  rs.forEach(r=>{(bya[K.a[r]]||(bya[K.a[r]]=[])).push(r);});
+  const keys=Object.keys(bya);
+  const full=keys.filter(a=>new Set(bya[a].map(r=>K.i[r])).size===CORE.length);
+  const share=a=>bya[a].filter(r=>fg(K,r)==='A').length/bya[a].length;
+  const t=sumBy(rs,r=>hd(K,r));
+  return {year:y,full_reporters:full.length,
+    zero_official:full.filter(a=>share(a)===0).length,
+    all_areas:keys.length,
+    zero_official_any:keys.filter(a=>share(a)===0).length,
+    median_full:median(full.map(share))*100,
+    animal_weighted:sumBy(rs.filter(r=>fg(K,r)==='A'),r=>hd(K,r))/t*100};
+}
+function median(a){if(!a.length)return NaN;const s=a.slice().sort((x,y)=>x-y);
+  const m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2;}
+
+(function(){
+  const C=runChecks();
+  const fails=C.filter(c=>c.ok===false).length;
+  let h='<p class="sub" style="margin:12px 0 8px">'+
+    (fails? '<span class="fail">'+fails+' of '+C.length+' rows fail.</span>'
+          : '<span class="pass">All '+C.filter(c=>c.ok!==null).length+' checks pass.</span>')+
+    ' There is no overall score and no traffic light: read the rows.</p>';
+  let g=null;
+  h+='<div class="scroll"><table><thead><tr><th>Check</th><th>Computed here</th>'+
+     '<th>Expected</th><th style="width:64px">Result</th></tr></thead><tbody>';
+  C.forEach(c=>{
+    if(c.g!==g){g=c.g;h+='<tr><td colspan="4" style="padding-top:12px"><b>'+esc(g)+'</b></td></tr>';}
+    h+='<tr'+(c.ok===false?' class="failrow"':'')+'><td>'+esc(c.what)+
+      (c.note?'<br><span class="faint">'+esc(c.note)+'</span>':'')+'</td>'+
+      '<td class="mono">'+esc(c.got)+'</td><td class="mono">'+esc(c.want)+'</td>'+
+      '<td class="'+(c.ok===null?'na':(c.ok?'pass':'fail'))+'">'+
+      (c.ok===null?'n/a':(c.ok?'PASS':'FAIL'))+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  el('checks').innerHTML=h;
+  el('breaknote').innerHTML='<b>How to make this table go red.</b> '+
+    '<span class="mono">python src/build_eda.py --break taiwan</span> writes '+
+    '<span class="mono">out/eda-break.html</span> with Taiwan keyed on M49 214, the Dominican '+
+    'Republic’s code. Three rows turn red: the FAO area with no geometry, the shared M49, '+
+    'and the distinct-areas-drawn count. The row marked NOT A CHECK stays green, which is the '+
+    'demonstration that the shipped coverage column could not have caught it. '+
+    '<span class="mono">--break numbers</span> multiplies one embedded head value and turns the '+
+    'headline and reconciliation rows red instead. Recorded in the README.';
+})();
+
+/* ---------- panel 1: funnel ---------- */
+(function(){
+  const yrs=YEARS.slice().reverse();
+  const sel=el('fn-year');
+  sel.innerHTML=yrs.map(y=>'<option'+(y===META.year?' selected':'')+'>'+y+'</option>').join('');
+  const fcols=[
+    {k:'label',t:'Stage'},{k:'rule',t:'Rule',r:r=>'<span class="mono">'+esc(r.rule)+'</span>'},
+    {k:'removed',t:'Removed',n:true,r:r=>r.removed===null?'':fmt(r.removed)},
+    {k:'standalone',t:'Standalone',n:true,r:r=>r.standalone===undefined?'':fmt(r.standalone)},
+    {k:'remaining',t:'Remaining',n:true,r:r=>r.remaining===null?'':fmt(r.remaining)},
+  ];
+  function allTable(){
+    const rows=DATA.funnel.map(f=>Object.assign({},f));
+    rows[0].remaining=META.rows_in_file;
+    let h='<table><thead><tr><th>Stage</th><th>Rule</th><th class="n">Removed</th>'+
+      '<th class="n">Standalone</th><th class="n">Remaining</th></tr></thead><tbody>';
+    rows.forEach(r=>{
+      h+='<tr class="stagerow" data-key="'+esc(r.key)+'"><td>'+esc(r.label)+
+        '<br><span class="faint">'+esc(r.why)+'</span></td>'+
+        '<td class="mono">'+esc(r.rule)+'</td>'+
+        '<td class="n">'+(r.removed===null?'':fmt(r.removed))+'</td>'+
+        '<td class="n">'+(r.standalone===undefined?'':fmt(r.standalone))+'</td>'+
+        '<td class="n">'+(r.remaining===null?'':fmt(r.remaining))+'</td></tr>';
+    });
+    el('fn-all').innerHTML=h+'</tbody></table>';
+    el('fn-all').querySelectorAll('.stagerow').forEach(tr=>tr.onclick=()=>drill(tr.dataset.key));
+  }
+  function yearTable(y){
+    const stock=(DATA.dropReasons.map(x=>x.key));
+    const dropY=[]; for(let r=0;r<D.a.length;r++) if(yr(D,r)===y) dropY.push(r);
+    const keptY=(byYear[y]||[]).length;
+    const total=dropY.length+keptY;
+    let remaining=total;
+    let h='<table><thead><tr><th>Stage</th><th class="n">Removed</th>'+
+      '<th class="n">Remaining</th></tr></thead><tbody>';
+    h+='<tr><td>Stocks rows this year</td><td class="n"></td><td class="n">'+fmt(total)+'</td></tr>';
+    DATA.dropReasons.forEach((rr,i)=>{
+      const n=dropY.filter(r=>D.r[r]===i).length; remaining-=n;
+      h+='<tr class="stagerow" data-key="'+esc(rr.key)+'"><td>'+esc(rr.label)+
+        '</td><td class="n">'+fmt(n)+'</td><td class="n">'+fmt(remaining)+'</td></tr>';
+    });
+    h+='<tr><td><b>Rows out</b></td><td class="n"></td><td class="n"><b>'+fmt(keptY)+
+      '</b></td></tr></tbody></table>';
+    el('fn-yr').innerHTML=h;
+    el('fn-yr').querySelectorAll('.stagerow').forEach(tr=>tr.onclick=()=>drill(tr.dataset.key));
+    el('fn-yearhead').textContent=y;
+    el('fn-yearnote').textContent='The whole-file stage 0 count is the release file, which has no '+
+      'per-year breakdown here; the year funnel starts from the stocks rows for that year.';
+  }
+  function drill(key){
+    const y=+sel.value;
+    const i=DATA.dropReasons.findIndex(r=>r.key===key);
+    if(i<0){el('fn-drill').innerHTML='<div class="note">Stage <b>'+esc(key)+
+      '</b> removes nothing; it is a count, not a filter.</div>';return;}
+    const rows=[]; for(let r=0;r<D.a.length;r++) if(D.r[r]===i&&yr(D,r)===y)
+      rows.push({area:an(D,r),code:ac(D,r),m49:am(D,r),item:inm(D,r),
+        elem:ELEM[D.e[r]],unit:UNITS[D.e[r]],value:D.v[r],head:hd(D,r),flag:fg(D,r)});
+    const allByArea={},allByItem={};
+    for(let r=0;r<D.a.length;r++) if(D.r[r]===i){
+      allByArea[an(D,r)]=(allByArea[an(D,r)]||0)+1;
+      allByItem[inm(D,r)]=(allByItem[inm(D,r)]||0)+1;
+    }
+    const areas=Object.keys(allByArea).sort((a,b)=>allByArea[b]-allByArea[a]);
+    const items=Object.keys(allByItem).sort((a,b)=>allByItem[b]-allByItem[a]);
+    el('fn-drill').innerHTML='<h3>Rows removed by "'+esc(DATA.dropReasons[i].label)+'" in '+y+
+      '</h3><div id="fn-drilltbl"></div>'+
+      '<div class="grid2" style="margin-top:14px"><div><h3>All years, by area ('+
+      areas.length+')</h3><div class="scroll">'+
+      plain([{k:'a',t:'Area'},{k:'n',t:'Rows',n:true,r:r=>fmt(r.n)}],
+        areas.map(a=>({a:a,n:allByArea[a]})))+'</div></div>'+
+      '<div><h3>All years, by item ('+items.length+')</h3><div class="scroll">'+
+      plain([{k:'a',t:'Item'},{k:'n',t:'Rows',n:true,r:r=>fmt(r.n)}],
+        items.map(a=>({a:a,n:allByItem[a]})))+'</div></div></div>';
+    tbl('fn-drilltbl',[
+      {k:'area',t:'Area'},{k:'code',t:'Area code',n:true},{k:'m49',t:'M49'},
+      {k:'item',t:'Item'},{k:'elem',t:'Element',n:true},{k:'unit',t:'Unit'},
+      {k:'value',t:'Value as filed',n:true,r:r=>r.value===null?'<span class="faint">blank</span>':fmt(r.value)},
+      {k:'head',t:'Head',n:true,r:r=>r.head===null?'<span class="faint">blank</span>':fmt(r.head)},
+      {k:'flag',t:'Flag',n:false,r:r=>sw(r.flag)+esc(r.flag)}],rows,{sort:'head',dir:-1});
+    document.querySelectorAll('#fn-all .stagerow,#fn-yr .stagerow')
+      .forEach(t=>t.classList.toggle('sel',t.dataset.key===key));
+  }
+  function units(){
+    const c={}; for(let r=0;r<NROW;r++){const k=ELEM[K.e[r]]+'|'+UNITS[K.e[r]];c[k]=(c[k]||0)+1;}
+    let h='<table><thead><tr><th>Element</th>'+UNITS.map(u=>'<th class="n">'+esc(u)+'</th>').join('')+
+      '</tr></thead><tbody>';
+    ELEM.forEach((e,i)=>{h+='<tr><td>'+e+'</td>'+UNITS.map(u=>{
+      const n=c[e+'|'+u]||0;
+      return '<td class="n">'+(n?fmt(n):'<span class="faint">0</span>')+'</td>';}).join('')+'</tr>';});
+    let scaled=0; for(let r=0;r<NROW;r++) if(K.e[r]===1) scaled++;
+    el('fn-unit').innerHTML=h+'</tbody></table><p class="faint">'+fmt(scaled)+
+      ' rows are multiplied by 1000 on the way to head, and they are exactly the '+
+      fmt(scaled)+' rows filed in 1000 An.</p>';
+  }
+  function china(y){
+    const rows=[];
+    const parts=new Set(META.china_parts);
+    const cIdx={}; AREA.code.forEach((c,i)=>{cIdx[c]=i;});
+    const compByItem={};
+    for(let r=0;r<D.a.length;r++) if(D.r[r]===1&&yr(D,r)===y)
+      compByItem[inm(D,r)]={head:hd(D,r),flag:fg(D,r)};
+    const partByItem={};
+    (byYear[y]||[]).forEach(r=>{ if(parts.has(ac(K,r))){
+      const it=inm(K,r); (partByItem[it]||(partByItem[it]=[])).push(r);} });
+    Object.keys(compByItem).forEach(it=>{
+      // The three composite items are dropped one stage later, so their parts are not in the
+      // kept table and a comparison here would read as a large difference that means nothing.
+      if(META.composite_items.indexOf(it)>=0) return;
+      const ps=partByItem[it]||[];
+      const s=sumBy(ps,r=>hd(K,r));
+      const dfr=compByItem[it].head-s;
+      rows.push({item:it,comp:compByItem[it].head,parts:s,n:ps.length,diff:dfr,
+        rel:compByItem[it].head?Math.abs(dfr)/compByItem[it].head:0});
+    });
+    rows.sort((a,b)=>b.comp-a.comp);
+    el('fn-china').innerHTML=(rows.length?plain([
+      {k:'item',t:'Item'},
+      {k:'comp',t:'Area 351',n:true,r:r=>fmt(r.comp)},
+      {k:'parts',t:'Sum of parts',n:true,r:r=>fmt(r.parts)},
+      {k:'n',t:'Parts',n:true},
+      {k:'diff',t:'Difference',n:true,
+       r:r=>'<span class="'+(r.diff===0?'pass':(r.rel<1e-4?'':'fail'))+'">'+fmt(r.diff)+
+         (r.diff!==0&&r.rel<1e-4?' <span class="faint">('+(r.rel*100).toFixed(4)+
+         ' per cent, FAO rounding)</span>':'')+'</span>'}],rows)
+      :'<p class="faint">No China 351 rows in '+y+'.</p>')+
+      '<p class="faint">Cattle and Buffaloes, Sheep and Goats and Poultry Birds are left out: '+
+      'they are composite items whose parts leave the table one stage later, so the comparison '+
+      'would be against nothing. A difference here is the FAO\'s own arithmetic, not the '+
+      'pipeline\'s.</p>';
+  }
+  function refresh(){const y=+sel.value; yearTable(y); china(y); el('fn-drill').innerHTML='';}
+  sel.onchange=refresh;
+  allTable(); units(); refresh();
+})();
+
+/* ---------- panel 2: rows as filed ---------- */
+(function(){
+  const yrs=['all'].concat(YEARS.slice().reverse());
+  el('rw-year').innerHTML=yrs.map(y=>'<option'+(y===META.year?' selected':'')+'>'+y+'</option>').join('');
+  const itemNames=ITEM.name.slice().sort();
+  el('rw-item').innerHTML='<option value="core">the five core species</option>'+
+    '<option value="all">every item</option>'+
+    itemNames.map(n=>'<option>'+esc(n)+'</option>').join('');
+  el('rw-flag').innerHTML='<option value="all">any</option>'+
+    'AEIX'.split('').map(f=>'<option value="'+f+'">'+f+' &middot; '+esc(DATA.flagWords[f])+
+    '</option>').join('');
+  function refresh(){
+    const y=el('rw-year').value, it=el('rw-item').value, fl=el('rw-flag').value;
+    const q=el('rw-q').value.trim().toLowerCase();
+    const rows=[];
+    let total=0;
+    for(let r=0;r<NROW;r++){
+      if(y!=='all' && yr(K,r)!==+y) continue;
+      if(it==='core'){ if(!CORE_SET.has(K.i[r])) continue; }
+      else if(it!=='all'){ if(ITEM.name[K.i[r]]!==it) continue; }
+      if(fl!=='all' && fg(K,r)!==fl) continue;
+      if(q && an(K,r).toLowerCase().indexOf(q)<0) continue;
+      const h=hd(K,r); total+=h===null?0:h;
+      rows.push({area:an(K,r),code:ac(K,r),m49:am(K,r),item:inm(K,r),
+        icode:ITEM.code[K.i[r]],elem:ELEM[K.e[r]],year:yr(K,r),unit:UNITS[K.e[r]],
+        value:K.v[r],head:h,flag:fg(K,r),
+        core:(yr(K,r)===META.year&&CORE_SET.has(K.i[r]))});
+    }
+    el('rw-count').textContent=fmt(rows.length)+' rows, '+f1(total/1e6)+
+      ' million head under this filter';
+    tbl('rw-table',[
+      {k:'area',t:'Area',r:r=>'<span class="click" data-area="'+esc(r.area)+'">'+esc(r.area)+'</span>'},
+      {k:'code',t:'Area code',n:true},{k:'m49',t:'M49'},
+      {k:'item',t:'Item'},{k:'icode',t:'Item code',n:true},
+      {k:'elem',t:'Element',n:true},{k:'year',t:'Year',n:true},{k:'unit',t:'Unit'},
+      {k:'value',t:'Value as filed',n:true,r:r=>fmt(r.value)},
+      {k:'head',t:'Head',n:true,r:r=>fmt(r.head)},
+      {k:'flag',t:'Flag',r:r=>(r.core?sw(r.flag):'')+esc(r.flag)},
+      {k:'words',t:'Flag in words',r:r=>'<span class="faint">'+esc(DATA.flagWords[r.flag]||'')+
+        '</span>'}],rows,{sort:'head',dir:-1,page:400});
+    el('rw-table').querySelectorAll('[data-area]').forEach(s=>s.onclick=()=>{
+      const sel=el('cc-area'); sel.value=s.dataset.area; sel.dispatchEvent(new Event('change'));
+      el('s6').scrollIntoView({behavior:'smooth'});});
+  }
+  ['rw-year','rw-item','rw-flag'].forEach(i=>el(i).onchange=refresh);
+  el('rw-q').oninput=refresh;
+  refresh();
+})();
+
+/* ---------- panel 3: drawn against source ---------- */
+(function(){
+  el('jn-species').innerHTML='<option value="all">all five</option>'+
+    CORE.map(s=>'<option>'+esc(s)+'</option>').join('');
+  const cards=[
+    ['Geometries drawn',fmt(GEO.length),'Natural Earth 50m, Antarctica dropped'],
+    ['Geometry-species rows',fmt(DRAWN.length),'read from out/map-2022-drawn.csv'],
+    ['FAO areas with no geometry',fmt(noGeo.length),noGeo.length?'<span class="fail">'+
+      esc(noGeo.map(g=>g.area+' ('+g.m49+')').join(', '))+'</span>':'must be empty'],
+    ['M49 keys on more than one geometry',fmt(dupM49.length),dupM49.length?
+      '<span class="fail">'+esc(dupM49.map(m=>m+': '+geoByM49[m].map(g=>g.n).join(' and '))
+      .join('; '))+'</span>':'must be empty'],
+  ];
+  el('jn-summary').innerHTML=cards.map(c=>'<div class="card"><h4>'+esc(c[0])+
+    '</h4><div class="big">'+c[1]+'</div><div class="faint">'+c[2]+'</div></div>').join('');
+
+  function pairs(){
+    const only=el('jn-diff').checked, sp=el('jn-species').value;
+    const rows=[];
+    DRAWN.forEach(d=>{
+      if(!d.fa) return;
+      if(sp!=='all'&&d.sp!==sp) return;
+      const s=sim(d.g,d.fa);
+      if(only && norm(d.g)===norm(d.fa)) return;
+      const src=srcByKey[d.m+'|'+d.sp];
+      rows.push({sim:s,geo:d.g,fao:d.fa,m49:d.m,un:d.un,sp:d.sp,drawn:d.fl,
+        source:src?src.flag:null,head:d.h,
+        _cls:(s<0.34?'failrow':'')});
+    });
+    el('jn-count').textContent=fmt(rows.length)+' matched geometry-species rows';
+    tbl('jn-pairs',[
+      {k:'sim',t:'Name similarity',n:true,r:r=>f3(r.sim)},
+      {k:'geo',t:'Natural Earth name'},
+      {k:'fao',t:'FAO area it matched'},
+      {k:'m49',t:'M49 key used'},
+      {k:'un',t:'UN_A3 as shipped'},
+      {k:'sp',t:'Species'},
+      {k:'drawn',t:'Flag drawn',r:r=>sw(r.drawn)+esc(r.drawn)},
+      {k:'source',t:'Flag in the source row',r:r=>sw(r.source)+esc(r.source)},
+      {k:'head',t:'Head drawn',n:true,r:r=>fmt(r.head)}],rows,{sort:'sim',dir:1,page:300});
+  }
+  el('jn-diff').onchange=pairs; el('jn-species').onchange=pairs; pairs();
+
+  el('jn-nogeo').innerHTML=noGeo.length?plain([{k:'area',t:'FAO area'},{k:'m49',t:'M49'},
+    {k:'species',t:'Species'}],noGeo.map(g=>Object.assign({_cls:'failrow'},g)))
+    :'<p class="pass">Empty. Every FAO area with a '+META.year+' core row has a geometry.</p>';
+
+  el('jn-dupe').innerHTML=dupM49.length?plain([{k:'m49',t:'M49'},{k:'g',t:'Geometries'}],
+    dupM49.map(m=>({m49:m,g:geoByM49[m].map(x=>x.n).join(' and '),_cls:'failrow'})))
+    :'<p class="pass">Empty apart from the sentinel '+esc(META.sentinel)+', which '+
+     (geoByM49[META.sentinel]||[]).length+' geometries carry.</p>';
+
+  const nf=noFao.map(g=>({n:g.n,ad:g.ad,iso:g.iso,un:g.un,m49:g.m49,ty:g.ty,ct:g.ct,
+    sent:(g.un.indexOf('-')===0?'sentinel':''),ov:g.ov?'overridden by hand':''}));
+  el('jn-nofao').innerHTML='<p class="faint">'+nf.length+' of '+GEO.length+
+    ' geometries have no FAO area in any year.</p>'+
+    '<div class="scroll">'+plain([{k:'n',t:'Natural Earth name'},{k:'ad',t:'Admin'},
+    {k:'iso',t:'ISO_A3'},{k:'un',t:'UN_A3'},{k:'m49',t:'M49 after overrides'},
+    {k:'ty',t:'Type'},{k:'ct',t:'Continent'},{k:'sent',t:'Note'}],
+    nf.sort((a,b)=>a.n.localeCompare(b.n)))+'</div>';
+
+  const diffs=[];
+  DRAWN.forEach(d=>{
+    const s=srcByKey[d.m+'|'+d.sp];
+    const want=s?s.flag:null;
+    if((d.fl||null)!==(want||null))
+      diffs.push({geo:d.g,sp:d.sp,drawn:d.fl||'none',source:want||'none',m49:d.m,_cls:'failrow'});
+  });
+  const agree=DRAWN.length-diffs.length;
+  el('jn-diffs').innerHTML='<p class="sub">'+fmt(agree)+' of '+fmt(DRAWN.length)+
+    ' geometry-species rows carry the flag of the source row their key matched'+
+    (diffs.length?', '+fmt(diffs.length)+' do not.':'.')+
+    ' <b>This agreement is not evidence the join is right.</b> A wrong key draws the wrong '+
+    'country consistently, so this number stays at '+fmt(DRAWN.length)+' on the broken build '+
+    'too. The two counts that discriminate are the FAO areas with no geometry and the distinct '+
+    'areas actually drawn, both above.</p>'+
+    (diffs.length?plain([{k:'geo',t:'Geometry'},{k:'sp',t:'Species'},{k:'m49',t:'M49'},
+      {k:'drawn',t:'Drawn'},{k:'source',t:'Source'}],diffs):'');
+})();
+
+/* ---------- panel 4: reconciliation ---------- */
+(function(){
+  const yrs=[]; for(let y=2010;y<=2024;y++) yrs.push(y);
+  const cell=(sp,src,y)=>{
+    const st=speciesStatsCache(y)[sp], w=worldByKey[src+'|'+y];
+    if(!w||!w.head) return {pct:null};
+    return {pct:(st.head-w.head)/w.head*100,sum:st.head,world:w.head,wflag:w.flag};
+  };
+  const cache={};
+  function speciesStatsCache(y){return cache[y]||(cache[y]=speciesStats(y));}
+  let h='<div class="scroll"><table><thead><tr><th>Species</th>'+
+    yrs.map(y=>'<th class="n">'+y+'</th>').join('')+'</tr></thead><tbody>';
+  CORE.forEach((sp,k)=>{
+    h+='<tr><td>'+esc(sp)+'</td>';
+    yrs.forEach(y=>{
+      const c=cell(sp,CORE_SRC[k],y);
+      if(c.pct===null){h+='<td class="n"><span class="faint">—</span></td>';return;}
+      const a=Math.abs(c.pct);
+      const bg=a<0.005?'#eef6f0':(a<0.5?'#fdf6ec':'#fbeceb');
+      const fgc=a<0.005?'var(--pass)':(a<0.5?'#8a6a2a':'var(--fail)');
+      h+='<td class="n"><span class="cellpct" style="background:'+bg+';color:'+fgc+
+        '" data-sp="'+esc(sp)+'" data-src="'+esc(CORE_SRC[k])+'" data-y="'+y+'">'+
+        f2(c.pct)+'</span></td>';
+    });
+    h+='</tr>';
+  });
+  h+='</tbody></table></div><p class="faint">Per cent difference between the country sum and '+
+     'FAOSTAT’s own World row. Green is zero to three decimal places. Click a cell.</p>';
+  el('rc-grid').innerHTML=h;
+  el('rc-grid').querySelectorAll('.cellpct').forEach(s=>s.onclick=()=>detail(
+    s.dataset.sp,s.dataset.src,+s.dataset.y,true));
+  function detail(sp,src,y,scroll){
+    const st=speciesStatsCache(y)[sp], w=worldByKey[src+'|'+y];
+    const gaps=gapAreas(src,y).filter(g=>g.head!==null);
+    const recent=gaps.filter(g=>g.nearest>=y-7);
+    const gapHead=recent.reduce((a,g)=>a+g.head,0);
+    const short=w.head-st.head;
+    el('rc-detail').innerHTML='<h3>'+esc(sp)+', '+y+'</h3>'+
+      '<div class="cards">'+
+      '<div class="card"><h4>Country sum</h4><div class="big">'+M(st.head)+' M</div>'+
+        '<div class="faint">'+st.areas+' reporting areas</div></div>'+
+      '<div class="card"><h4>FAO World row</h4><div class="big">'+M(w.head)+' M</div>'+
+        '<div class="faint">flag '+esc(w.flag)+' &middot; '+esc(DATA.faoFlags[w.flag]||'')+
+        '</div></div>'+
+      '<div class="card"><h4>Difference</h4><div class="big">'+M(st.head-w.head)+' M</div>'+
+        '<div class="faint">'+f2((st.head-w.head)/w.head*100)+' per cent</div></div>'+
+      '<div class="card"><h4>Explained by areas with no '+y+' row</h4><div class="big">'+
+        M(gapHead)+' M</div><div class="faint">'+recent.length+
+        ' areas reporting within seven years; residual '+M(short-gapHead)+' M</div></div>'+
+      '</div><h3>Areas with a series for this species but no row in '+y+'</h3>'+
+      plain([{k:'area',t:'Area'},{k:'nearest',t:'Nearest year',n:true},
+        {k:'head',t:'Head in that year',n:true,r:r=>fmt(r.head)},
+        {k:'flag',t:'Flag',r:r=>sw(r.flag)+esc(r.flag)}],gaps);
+    if(scroll) el('rc-detail').scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+  detail('Chickens','Chickens',META.year,false);   // the page must open at the top
+})();
+
+/* ---------- panel 5: flag composition over time ---------- */
+(function(){
+  el('fc-species').innerHTML='<option value="all">all five core species</option>'+
+    CORE.map(s=>'<option>'+esc(s)+'</option>').join('');
+  const st={sp:'all',w:'head',from:2010};
+  function bind(id,f){el(id).onclick=()=>{f();draw();};}
+  bind('fc-w-head',()=>{st.w='head';el('fc-w-head').classList.add('on');el('fc-w-rows').classList.remove('on');});
+  bind('fc-w-rows',()=>{st.w='rows';el('fc-w-rows').classList.add('on');el('fc-w-head').classList.remove('on');});
+  bind('fc-r-2010',()=>{st.from=2010;el('fc-r-2010').classList.add('on');el('fc-r-1961').classList.remove('on');});
+  bind('fc-r-1961',()=>{st.from=1961;el('fc-r-1961').classList.add('on');el('fc-r-2010').classList.remove('on');});
+  el('fc-species').onchange=()=>{st.sp=el('fc-species').value;draw();};
+
+  function series(){
+    const out=[];
+    for(let y=st.from;y<=2024;y++){
+      const rs=(byYear[y]||[]).filter(r=>st.sp==='all'?CORE_SET.has(K.i[r])
+        :labelOf(K.i[r])===st.sp);
+      const c={A:0,E:0,I:0,X:0};
+      rs.forEach(r=>{const f=fg(K,r); if(c[f]===undefined)return;
+        c[f]+= st.w==='head'?(hd(K,r)||0):1;});
+      const t=c.A+c.E+c.I+c.X;
+      out.push({y:y,c:c,t:t,n:rs.length});
+    }
+    return out;
+  }
+  function draw(){
+    const s=series();
+    // Fixed viewBox width with height:auto, so the SVG scales to the container instead of
+    // being letterboxed inside a box taller than the drawing.
+    const w=880, h=250, pl=44, pb=26, pt=10;
+    const bw=(w-pl-10)/s.length;
+    let svg='<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;height:auto">';
+    [0,25,50,75,100].forEach(g=>{
+      const yy=pt+(100-g)/100*(h-pt-pb);
+      svg+='<line x1="'+pl+'" y1="'+yy+'" x2="'+(w-10)+'" y2="'+yy+
+        '" stroke="#eee" stroke-width="1"/>'+
+        '<text x="'+(pl-6)+'" y="'+(yy+3.5)+'" font-size="10" fill="#8a8a8a" text-anchor="end">'+
+        g+'</text>';
+    });
+    s.forEach((d,i)=>{
+      const x=pl+i*bw+1, bwi=Math.max(1,bw-2);
+      let acc=0;
+      'AEIX'.split('').forEach(f=>{
+        if(!d.t) return;
+        const frac=d.c[f]/d.t, hh=frac*(h-pt-pb);
+        svg+='<rect x="'+x.toFixed(1)+'" y="'+(pt+acc).toFixed(1)+'" width="'+bwi.toFixed(1)+
+          '" height="'+hh.toFixed(1)+'" fill="'+COL[f]+'"><title>'+d.y+' '+f+' '+
+          (frac*100).toFixed(1)+'%</title></rect>';
+        acc+=hh;
+      });
+      if(d.y%(st.from===1961?10:2)===0)
+        svg+='<text x="'+(x+bwi/2).toFixed(1)+'" y="'+(h-8)+'" font-size="10" fill="#8a8a8a"'+
+          ' text-anchor="middle">'+d.y+'</text>';
+    });
+    const i15=s.findIndex(d=>d.y===2015);
+    if(i15>0){
+      const x=pl+i15*bw;
+      // Put the label on whichever side of the rule has room, or it runs off the plot.
+      const left=x>w*0.55;
+      svg+='<line x1="'+x.toFixed(1)+'" y1="'+pt+'" x2="'+x.toFixed(1)+'" y2="'+(h-pb)+
+        '" stroke="#b4453c" stroke-width="1.4" stroke-dasharray="3 3"/>'+
+        '<text x="'+(left?x-6:x+6).toFixed(1)+'" y="'+(pt+11)+'" font-size="10.5" '+
+        'fill="#b4453c" text-anchor="'+(left?'end':'start')+'">'+
+        'FAO changed its flag vocabulary here, between 2014 and 2015</text>';
+    }
+    svg+='</svg>';
+    el('fc-chart').innerHTML='<div class="chartbox"><h4>'+
+      (st.sp==='all'?'All five core species':esc(st.sp))+', share '+
+      (st.w==='head'?'of animals':'of rows')+' by flag</h4>'+svg+
+      '<p class="cap">'+'AEIX'.split('').map(f=>sw(f)+f).join(' &nbsp; ')+'</p></div>';
+    const rows=s.filter(d=>d.y>=2013&&d.y<=2016).map(d=>({y:d.y,
+      A:d.c.A,E:d.c.E,I:d.c.I,X:d.c.X,n:d.n}));
+    el('fc-table').innerHTML='<h3>Either side of the break</h3>'+
+      '<p class="faint">Counts are '+(st.w==='head'?'head':'rows')+
+      '. The estimated and imputed columns swap places; the official column barely moves, '+
+      'which is why the two lag series are safe to draw across the break and a composition '+
+      'series is not.</p>'+
+      plain([{k:'y',t:'Year',n:true},
+        {k:'A',t:'A',n:true,r:r=>fmt(r.A)},{k:'E',t:'E',n:true,r:r=>fmt(r.E)},
+        {k:'I',t:'I',n:true,r:r=>fmt(r.I)},{k:'X',t:'X',n:true,r:r=>fmt(r.X)},
+        {k:'n',t:'Rows',n:true}],rows);
+  }
+  draw();
+
+  /* lag comparison */
+  const rows=DATA.lag.map(l=>{
+    const rec=lagRow(l.year);
+    const ok=rec.full_reporters===l.full_reporters&&rec.zero_official===l.zero_official&&
+      rec.all_areas===l.all_areas&&rec.zero_official_any===l.zero_official_any&&
+      Math.abs(rec.animal_weighted-l.animal_weighted_official)<0.001;
+    return {y:l.year,
+      fullRec:rec.zero_official+' of '+rec.full_reporters,
+      fullShip:l.zero_official+' of '+l.full_reporters,
+      anyRec:rec.zero_official_any+' of '+rec.all_areas,
+      anyShip:l.zero_official_any+' of '+l.all_areas,
+      medRec:rec.median_full,
+      awRec:rec.animal_weighted,awShip:l.animal_weighted_official,
+      ok:ok?'match':'differ',_cls:ok?'':'failrow'};
+  });
+  el('fc-lag').innerHTML=plain([
+    {k:'y',t:'Year',n:true},
+    {k:'fullRec',t:'Zero official, five-species reporters (recomputed)'},
+    {k:'fullShip',t:'same, shipped CSV'},
+    {k:'anyRec',t:'Zero official, any reporting area (recomputed)'},
+    {k:'anyShip',t:'same, shipped CSV'},
+    {k:'medRec',t:'Median share, five-species reporters',n:true,r:r=>f1(r.medRec)},
+    {k:'awRec',t:'Animal-weighted official (recomputed)',n:true,r:r=>f2(r.awRec)},
+    {k:'awShip',t:'shipped',n:true,r:r=>f2(r.awShip)},
+    {k:'ok',t:'',r:r=>'<span class="'+(r.ok==='match'?'pass':'fail')+'">'+r.ok+'</span>'}],rows)+
+    '<p class="faint">The median share reads exactly 80.0 for thirteen consecutive years. '+
+    'That is four of five species official in the median country, and it is stable because the '+
+    'denominator is fixed at five; it is not a rounding artefact.</p>';
+})();
+
+/* ---------- panel 6: country card ---------- */
+(function(){
+  const names=AREA.name.slice().sort();
+  const sel=el('cc-area');
+  sel.innerHTML=names.map(n=>'<option'+(n==='Australia'?' selected':'')+'>'+esc(n)+'</option>').join('');
+  const st={from:2010};
+  el('cc-r-2010').onclick=()=>{st.from=2010;el('cc-r-2010').classList.add('on');
+    el('cc-r-1961').classList.remove('on');draw();};
+  el('cc-r-1961').onclick=()=>{st.from=1961;el('cc-r-1961').classList.add('on');
+    el('cc-r-2010').classList.remove('on');draw();};
+  sel.onchange=draw;
+
+  function lineChart(pts,title,from){
+    const w=340,h=132,pl=46,pb=20,pt=14,pr=8;
+    const ps=pts.filter(p=>p.y>=from);
+    if(!ps.length) return '<div class="chartbox"><h4>'+esc(title)+
+      '</h4><p class="cap">No row in any year from '+from+'.</p></div>';
+    const y0=from,y1=2024;
+    const mx=Math.max.apply(null,ps.map(p=>p.h));
+    const X=y=>pl+(y-y0)/(y1-y0)*(w-pl-pr);
+    const Y=v=>pt+(1-(mx?v/mx:0))*(h-pt-pb);
+    let svg='<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;height:auto">';
+    svg+='<line x1="'+pl+'" y1="'+Y(mx)+'" x2="'+(w-pr)+'" y2="'+Y(mx)+
+      '" stroke="#eee"/><text x="'+(pl-5)+'" y="'+(Y(mx)+3.5)+
+      '" font-size="9.5" fill="#8a8a8a" text-anchor="end">'+M(mx)+' M</text>';
+    svg+='<line x1="'+pl+'" y1="'+Y(0)+'" x2="'+(w-pr)+'" y2="'+Y(0)+
+      '" stroke="#eee"/><text x="'+(pl-5)+'" y="'+(Y(0)+3.5)+
+      '" font-size="9.5" fill="#8a8a8a" text-anchor="end">0</text>';
+    if(from<=2014){
+      const x=X(2014.5);
+      svg+='<line x1="'+x.toFixed(1)+'" y1="'+pt+'" x2="'+x.toFixed(1)+'" y2="'+(h-pb)+
+        '" stroke="#b4453c" stroke-width="1" stroke-dasharray="3 3"><title>'+
+        'FAO flag vocabulary changed between 2014 and 2015</title></line>';
+    }
+    for(let i=1;i<ps.length;i++){
+      if(ps[i].y-ps[i-1].y!==1) continue;   // gaps stay gaps
+      svg+='<line x1="'+X(ps[i-1].y).toFixed(1)+'" y1="'+Y(ps[i-1].h).toFixed(1)+
+        '" x2="'+X(ps[i].y).toFixed(1)+'" y2="'+Y(ps[i].h).toFixed(1)+
+        '" stroke="#c8c8c8" stroke-width="1.2"/>';
+    }
+    ps.forEach(p=>{svg+='<circle cx="'+X(p.y).toFixed(1)+'" cy="'+Y(p.h).toFixed(1)+
+      '" r="3" fill="'+(COL[p.f]||NONE)+'"><title>'+p.y+' '+fmt(p.h)+' head, flag '+p.f+
+      '</title></circle>';});
+    // Anchor the end labels inward or they are clipped by the viewBox.
+    [[y0,'start'],[Math.round((y0+y1)/2),'middle'],[y1,'end']].forEach(p=>{
+      svg+='<text x="'+X(p[0]).toFixed(1)+'" y="'+(h-6)+'" font-size="9.5" fill="#8a8a8a"'+
+        ' text-anchor="'+p[1]+'">'+p[0]+'</text>';});
+    svg+='</svg>';
+    const gaps=[];
+    for(let y=from;y<=2024;y++) if(!ps.some(p=>p.y===y)) gaps.push(y);
+    return '<div class="chartbox"><h4>'+esc(title)+'</h4>'+svg+
+      '<p class="cap">'+ps.length+' rows'+(gaps.length?', no row in '+gaps.join(', '):'')+
+      '</p></div>';
+  }
+
+  function draw(){
+    const name=sel.value, ai=areaIdxByName[name];
+    const rows=(byArea[ai]||[]);
+    let charts='';
+    CORE.forEach((sp,k)=>{
+      const ii=CORE_II[k];
+      const pts=rows.filter(r=>K.i[r]===ii).map(r=>({y:yr(K,r),h:hd(K,r),f:fg(K,r)}))
+        .filter(p=>p.h!==null).sort((a,b)=>a.y-b.y);
+      charts+=lineChart(pts,sp,st.from);
+    });
+    el('cc-charts').innerHTML=charts;
+
+    /* what the map painted */
+    const m49=AREA.m49[ai];
+    const gs=geoByM49[m49]||[];
+    let mh;
+    if(!gs.length){
+      mh='<p class="fail">No Natural Earth geometry carries M49 '+esc(m49)+
+        ', so this area is not drawn on the map at all. Its animals are still counted in the '+
+        'percentages beside each panel.</p>';
+    } else {
+      const rws=[];
+      gs.forEach(g=>{
+        CORE.forEach(sp=>{
+          const d=DRAWN.find(x=>x.g===g.n&&x.sp===sp);
+          const src=srcByKey[m49+'|'+sp];
+          rws.push({geo:g.n,sp:sp,drawn:d?(d.fl||'none'):'—',
+            fao:d?(d.fa||'—'):'—',
+            source:src?src.flag:'no row',
+            agree:(d&&(d.fl||null)===(src?src.flag:null))?'agree':'DISAGREE',
+            _cls:(d&&(d.fl||null)!==(src?src.flag:null))?'failrow':''});
+        });
+      });
+      mh='<p class="faint">M49 '+esc(m49)+' &middot; geometry '+
+        esc(gs.map(g=>g.n).join(', '))+(gs.length>1?
+        ' <span class="fail">(more than one geometry carries this key)</span>':'')+'</p>'+
+        plain([{k:'sp',t:'Species'},{k:'geo',t:'Geometry drawn'},
+          {k:'fao',t:'FAO area the geometry matched'},
+          {k:'drawn',t:'Flag painted',r:r=>sw(r.drawn)+esc(r.drawn)},
+          {k:'source',t:'Flag in this country’s own row',r:r=>sw(r.source)+esc(r.source)},
+          {k:'agree',t:'',r:r=>'<span class="'+(r.agree==='agree'?'pass':'fail')+'">'+
+            r.agree+'</span>'}],rws)+
+        '<p class="faint">If the FAO area column names a different country from the geometry '+
+        'column, this country is being drawn with someone else’s data even though every '+
+        'flag agrees.</p>';
+    }
+    el('cc-map').innerHTML=mh;
+
+    /* A to I switches */
+    const sws=[];
+    CORE.forEach((sp,k)=>{
+      const ii=CORE_II[k];
+      const pts=rows.filter(r=>K.i[r]===ii).map(r=>({y:yr(K,r),h:hd(K,r),f:fg(K,r)}))
+        .filter(p=>p.h!==null).sort((a,b)=>a.y-b.y);
+      for(let i=1;i<pts.length;i++){
+        if(pts[i-1].f==='A'&&pts[i].f==='I')
+          sws.push({sp:sp,from:pts[i-1].y,to:pts[i].y,
+            was:pts[i-1].h,now:pts[i].h,
+            ratio:pts[i-1].h?pts[i].h/pts[i-1].h:null});
+      }
+    });
+    el('cc-switch').innerHTML=sws.length?plain([{k:'sp',t:'Species'},
+      {k:'from',t:'Last official',n:true},{k:'to',t:'First imputed',n:true},
+      {k:'was',t:'Official value',n:true,r:r=>fmt(r.was)},
+      {k:'now',t:'Imputed value',n:true,r:r=>fmt(r.now)},
+      {k:'ratio',t:'Ratio',n:true,r:r=>r.ratio===null?'—':f3(r.ratio)+
+        (Math.abs(r.ratio-1)<1e-9?' <span class="fail">carried forward</span>':'')}],sws)
+      :'<p class="faint">No switch from official to imputed in any core species.</p>';
+
+    /* every core row */
+    const cr=rows.filter(r=>CORE_SET.has(K.i[r])).map(r=>({
+      sp:labelOf(K.i[r]),year:yr(K,r),unit:UNITS[K.e[r]],value:K.v[r],head:hd(K,r),
+      flag:fg(K,r),words:DATA.flagWords[fg(K,r)]}));
+    tbl('cc-rows',[{k:'sp',t:'Species'},{k:'year',t:'Year',n:true},{k:'unit',t:'Unit'},
+      {k:'value',t:'Value as filed',n:true,r:r=>fmt(r.value)},
+      {k:'head',t:'Head',n:true,r:r=>fmt(r.head)},
+      {k:'flag',t:'Flag',r:r=>sw(r.flag)+esc(r.flag)},
+      {k:'words',t:'Flag in words'}],cr,{sort:'year',dir:-1,page:400});
+  }
+  draw();
+})();
+
+/* ---------- panel 7: where the imputation is ---------- */
+(function(){
+  el('im-year').innerHTML=YEARS.slice().reverse()
+    .map(y=>'<option'+(y===META.year?' selected':'')+'>'+y+'</option>').join('');
+  el('im-flag').innerHTML='AEIX'.split('').map(f=>'<option value="'+f+'"'+
+    (f==='I'?' selected':'')+'>'+f+' &middot; '+esc(DATA.flagWords[f])+'</option>').join('');
+  function draw(){
+    const y=+el('im-year').value, f=el('im-flag').value, noCn=el('im-nochina').checked;
+    const chinaIdx=areaIdxByName['China, mainland'], chIi=itemIdxByName['Chickens'];
+    let base=(byYear[y]||[]).filter(r=>CORE_SET.has(K.i[r]));
+    if(noCn) base=base.filter(r=>!(K.a[r]===chinaIdx&&K.i[r]===chIi));
+    const tot=sumBy(base,r=>hd(K,r));
+    const sel=base.filter(r=>fg(K,r)===f);
+    const selHead=sumBy(sel,r=>hd(K,r));
+    const shares={}; 'AEIX'.split('').forEach(ff=>{
+      shares[ff]=sumBy(base.filter(r=>fg(K,r)===ff),r=>hd(K,r))/tot*100;});
+    el('im-head').innerHTML=
+      '<div class="card"><h4>Animals flagged '+f+' in '+y+'</h4><div class="big">'+
+        M(selHead)+' M</div><div class="faint">'+f1(shares[f])+' per cent of '+M(tot)+
+        ' M across the five species</div></div>'+
+      '<div class="card"><h4>Rows carrying it</h4><div class="big">'+fmt(sel.length)+
+        '</div><div class="faint">of '+fmt(base.length)+' core rows</div></div>'+
+      '<div class="card"><h4>All four shares</h4><div class="big">'+
+        'AEIX'.split('').map(ff=>f1(shares[ff])).join(' / ')+
+        '</div><div class="faint">A / E / I / X, by head'+
+        (noCn?', excluding China mainland chickens':'')+'</div></div>'+
+      '<div class="card"><h4>Top three rows</h4><div class="big">'+
+        f1(sel.slice().sort((a,b)=>hd(K,b)-hd(K,a)).slice(0,3)
+          .reduce((a,r)=>a+hd(K,r),0)/selHead*100)+
+        ' %</div><div class="faint">of everything flagged '+f+'</div></div>';
+    const sorted=sel.slice().sort((a,b)=>hd(K,b)-hd(K,a));
+    let acc=0;
+    const rows=sorted.map((r,i)=>{acc+=hd(K,r);
+      return {rank:i+1,area:an(K,r),sp:labelOf(K.i[r]),head:hd(K,r),
+        pct:hd(K,r)/selHead*100,cum:acc/selHead*100,
+        m49:am(K,r),flag:f};});
+    el('im-table').innerHTML='<div id="im-t"></div>'+
+      '<p class="faint">Cumulative share reaches '+f1(rows.length?rows[rows.length-1].cum:0)+
+      ' per cent at the last row, which is the arithmetic check on this table.</p>';
+    tbl('im-t',[{k:'rank',t:'#',n:true},
+      {k:'area',t:'Area',r:r=>'<span class="click" data-area="'+esc(r.area)+'">'+esc(r.area)+'</span>'},
+      {k:'sp',t:'Species'},
+      {k:'head',t:'Head',n:true,r:r=>fmt(r.head)},
+      {k:'pct',t:'Share of flag '+f,n:true,r:r=>f1(r.pct)},
+      {k:'cum',t:'Cumulative',n:true,r:r=>f1(r.cum)}],rows,{sort:'head',dir:-1,page:30});
+    el('im-t').querySelectorAll('[data-area]').forEach(s=>s.onclick=()=>{
+      const cs=el('cc-area'); cs.value=s.dataset.area; cs.dispatchEvent(new Event('change'));
+      el('s6').scrollIntoView({behavior:'smooth'});});
+  }
+  ['im-year','im-flag','im-nochina'].forEach(i=>el(i).onchange=draw);
+  draw();
+})();
+
+/* ---------- panel 8: missing species ---------- */
+(function(){
+  el('ms-year').innerHTML=YEARS.slice().reverse()
+    .map(y=>'<option'+(y===META.year?' selected':'')+'>'+y+'</option>').join('');
+  function draw(){
+    const y=+el('ms-year').value;
+    const rs=(byYear[y]||[]).filter(r=>CORE_SET.has(K.i[r]));
+    const have={};
+    rs.forEach(r=>{(have[K.a[r]]||(have[K.a[r]]={}))[labelOf(K.i[r])]=fg(K,r);});
+    const areas=Object.keys(have);
+    const rows=areas.map(a=>{
+      const o={area:AREA.name[+a],m49:AREA.m49[+a]};
+      let miss=0;
+      CORE.forEach(sp=>{o[sp]=have[a][sp]||null; if(!have[a][sp]) miss++;});
+      o.missing=miss;
+      return o;
+    });
+    el('ms-count').textContent=fmt(areas.length)+' areas report at least one core species in '+y+
+      '; '+fmt(rows.filter(r=>r.missing===0).length)+' report all five';
+    tbl('ms-grid',[{k:'area',t:'Area'},{k:'m49',t:'M49'}].concat(
+      CORE.map(sp=>({k:sp,t:sp,r:r=>r[sp]?sw(r[sp])+esc(r[sp]):'<span class="cross">·</span>'})))
+      .concat([{k:'missing',t:'Missing',n:true}]),rows,{sort:'missing',dir:-1,page:300});
+
+    let lh='';
+    CORE.forEach((sp,k)=>{
+      const src=CORE_SRC[k];
+      const gaps=gapAreas(src,y);
+      const everSet=new Set(); for(let r=0;r<NROW;r++) if(K.i[r]===CORE_II[k]) everSet.add(K.a[r]);
+      const never=[]; for(let i=0;i<AREA.name.length;i++) if(!everSet.has(i)) never.push(AREA.name[i]);
+      lh+='<h4 style="margin:12px 0 2px;font-size:12.5px">'+esc(sp)+
+        ' <span class="faint">'+ (areas.filter(a=>have[a][sp]).length) +' reporting areas in '+y+
+        '</span></h4>'+
+        '<p class="faint"><b>Has a series, no row in '+y+' ('+gaps.length+'):</b> '+
+        esc(gaps.map(g=>g.area+' ['+g.nearest+', '+(g.head===null?'blank':M(g.head)+' M')+', '+
+        g.flag+']').join('; ')||'none')+'</p>'+
+        '<p class="faint"><b>No row in any year ('+never.length+'):</b> '+
+        esc(never.join(', ')||'none')+'</p>';
+    });
+    el('ms-lists').innerHTML=lh;
+  }
+  el('ms-year').onchange=draw;
+  draw();
+  const nf=noFao.map(g=>({n:g.n,ad:g.ad,iso:g.iso,un:g.un,ty:g.ty,ct:g.ct}));
+  tbl('ms-terr',[{k:'n',t:'Natural Earth name'},{k:'ad',t:'Admin'},{k:'iso',t:'ISO_A3'},
+    {k:'un',t:'UN_A3'},{k:'ty',t:'Type'},{k:'ct',t:'Continent'}],nf,{sort:'n',dir:1,page:60});
+})();
+
+})();
+</script>
+</body>
+</html>

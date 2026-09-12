@@ -1,0 +1,6 @@
+species,head,head_millions,head_billions,share_of_set_pct,pct_official_by_head,pct_official_by_area,reporting_areas,fao_world_row,pct_diff_vs_fao_world
+Chickens,26112107000,26112.1,26.11,83.9,51.0,47.3,184,26734785000,-2.33
+Cattle,1555410381,1555.4,1.56,5.0,74.3,66.7,192,1555410381,0.0
+Sheep,1347999944,1348.0,1.35,4.3,76.7,65.6,180,1347999945,-0.0
+Goats,1136340131,1136.3,1.14,3.6,63.9,63.1,187,1136340133,-0.0
+Pigs,984850424,984.9,0.98,3.2,94.8,64.0,172,984854015,-0.0

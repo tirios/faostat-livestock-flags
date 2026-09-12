@@ -1,0 +1,11 @@
+# The raw archive is read once and cached here so the page build does not re-read a
+# 32 MB zip on every run. It is derived, large, and rebuilt on demand.
+out/eda-cache/
+
+# A break build writes this so the good page survives being compared against a bad one.
+out/eda-break.html
+
+__pycache__/
+*.pyc
+.venv/
+.DS_Store

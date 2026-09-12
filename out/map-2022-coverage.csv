@@ -1,0 +1,6 @@
+species,fao_rows_in,geo_matched,fao_unmatched,reporting_areas,head_millions,pct_animals_official,pct_areas_official
+Chickens,184,184,0,184,26112.1,51.0,47.3
+Cattle,192,192,0,192,1555.4,74.3,66.7
+Sheep,180,180,0,180,1348.0,76.7,65.6
+Goats,187,187,0,187,1136.3,63.9,63.1
+Pigs,172,172,0,172,984.9,94.8,64.0

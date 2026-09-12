@@ -1,0 +1,36 @@
+This repository contains two kinds of material under two different terms.
+
+
+THE CODE AND THE DERIVED OUTPUTS
+--------------------------------
+
+Everything in src/, and every file this repository generates into out/, is released
+into the public domain under CC0 1.0 Universal.
+
+To the extent possible under law, the authors have waived all copyright and related or
+neighbouring rights to this work. You may copy, modify, distribute and use it, including
+for commercial purposes, without asking and without attribution.
+
+Full text: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+
+No warranty of any kind is given. The work is provided as is.
+
+
+THE SOURCE DATA
+---------------
+
+data/raw/qcl_2025-12-31.zip is a verbatim copy of a FAOSTAT bulk download and is NOT
+covered by the above. It is the property of the Food and Agriculture Organization of
+the United Nations and is licensed CC BY 4.0.
+
+  FAO. 2025. Production: Crops and livestock products. FAOSTAT.
+  Licence: CC BY 4.0. https://www.fao.org/faostat/en/#data/QCL
+
+If you redistribute that file, or figures computed from it, that attribution has to
+travel with it. The archive is included rather than downloaded on demand because the
+FAO bulk endpoint serves only the current release: without the file, the SHA-256 pin in
+data/raw/manifest.json cannot be checked against anything.
+
+data/geo/ne_50m_admin_0_countries.geojson is Natural Earth, which is public domain.
+
+  https://www.naturalearthdata.com/about/terms-of-use/

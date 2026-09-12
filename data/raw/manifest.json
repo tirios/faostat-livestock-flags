@@ -1,0 +1,9 @@
+{
+ "file": "data/raw/qcl_2025-12-31.zip",
+ "bytes": 33921825,
+ "sha256": "c5835418c18f9322e7decbd6800f93a216eaae3cdfa31acb08f0518c0c6d6853",
+ "source": "https://bulks-faostat.fao.org/production/Production_Crops_Livestock_E_All_Data_(Normalized).zip",
+ "faostat_release": "2025-12-31",
+ "fetched": "2026-09-05",
+ "copied_to_project": "2026-09-06"
+}

@@ -1,0 +1,23 @@
+{
+ "year": 2022,
+ "species": [
+  "Chickens",
+  "Cattle",
+  "Sheep",
+  "Goats",
+  "Pigs"
+ ],
+ "total_head": 31136707880,
+ "database": "FAOSTAT, Production: Crops and livestock products (QCL)",
+ "release": "2025-12-31",
+ "url": "https://bulks-faostat.fao.org/production/Production_Crops_Livestock_E_All_Data_(Normalized).zip",
+ "licence": "CC BY 4.0",
+ "archive_sha256": "c5835418c18f9322e7decbd6800f93a216eaae3cdfa31acb08f0518c0c6d6853",
+ "fetched": "2026-09-05",
+ "geometry": "Natural Earth 50m admin-0",
+ "chicken_gap_states": 10,
+ "chicken_gap_head_millions": 617.8,
+ "chicken_shortfall_pct": 2.33,
+ "chicken_pct_official_including_gap": 52.1,
+ "generated_from": "out/numbers.json by src/chart_data.py"
+}
