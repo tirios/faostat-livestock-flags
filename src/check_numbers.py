@@ -5,7 +5,7 @@ one fact as 617.8, 618 and 620 in three places, which this one did until it was 
 make_numbers.py computes each figure once; this reads the prose back and checks it.
 
 The check is deliberately noisy in one direction and silent in the other: it reports every
-number it cannot account for, and those are cleared by hand. A number that is genuinely new
+number it cannot account for, and the author clears them. A number that is genuinely new
 prose (a year, a page count, a percentage from a cited paper) is added to ALLOWED below
 with a reason, so the exceptions are a visible list rather than a loosened rule.
 
@@ -23,25 +23,28 @@ ALLOWED = {
     # figure in script. The zero is a placeholder, not a claim.
     '0.00',
     # ---- figures from cited third parties -------------------------------------
-    # Not measurements of this data, so numbers.json cannot hold them.
-    '5.9', '9.22', '1.54',   # the GBADs portal snapshot, compared against the pinned bulk
-    # ---- unit scaling and ratio thresholds on the checking page -----------------
-    # FAOSTAT files poultry in "1000 An", so 1000 is the multiplier the unit crosstab
-    # explains, not a measurement. 1.000 is the ratio at which a value has been carried
-    # forward unchanged from the last official one, which is a threshold the page names.
-    '1000', '1.000',
-    # The flag-era shares the page draws on its own vocabulary-break panel: imputation
-    # goes from about 3 per cent before 2015 to about 38 after, which is the relabelling
-    # rather than a change in the world. Computed on the page from its embedded data.
-    '3', '38',
+    # Not project measurements, so numbers.json cannot hold them. Each was verified by
+    # opening the source on 11 September 2026; the citation in the post is the record.
+    '211', '259.6', '259,585,231', '259585231', '136',   # Stray Dog, State of the Movement 2024 [1]
+    '5.9', '9.22', '1.54',                               # GBADs portal vs the pinned bulk [18]
+    '2605.26340',                                        # arXiv identifier [16]
+    # ---- figures measured from the session transcripts --------------------------
+    # Real measurements, but of the build session rather than of the livestock data, so
+    # they have no home in numbers.json. Sources 3 to 5 carry the method.
+    '3,070', '3070', '96.3', '38',
     # ---- properties of the checking page itself ---------------------------------
     # out/eda.html states its own total on the page: "All 48 checks pass." Putting it in
     # numbers.json would be circular, since the page checks numbers.json.
     '48',
     # ---- quantities that are not measurements -----------------------------------
-    '100',   # "row width is always 100 per cent"
+    '100',   # "row width is always 100 per cent", and "100 per cent Opus 5"
     '30',    # the Science One blog's publication day, 30 July 2026
-    '2.7', '30.9',  # flag-era shares, quoted in notes rather than in any artefact here
+    '2.7', '30.9',  # flag-era shares quoted in the Open items, a working note not the post
+    # ---- colour separations, measured once and not recomputed -------------------
+    # Measured with colorspacious, which is not a dependency, and recorded in a comment at
+    # the top of src/draw_map.py. The README says plainly that these two are asserted
+    # rather than checked. They are the only figures in the project with that status.
+    '23.1', '6.9',
     # ---- values produced by the DELIBERATELY BROKEN build -----------------------
     # README documents what failure looks like, quoting the figures that
     # src/build_eda.py --break taiwan produces. They are wrong on purpose, so by
@@ -140,10 +143,9 @@ def strip(text):
     text = re.sub(r'(<h[1-6][^>]*>)\s*\d+(?:\.\d+)*\.?(?=\s)', r'\1', text)
     text = re.sub(r'(?m)^(#{1,6}\s+)\d+(?:\.\d+)*\.?(?=\s)', r'\1', text)
     text = re.sub(r'\b([Ss]ections?)\s+\d+(?:\.\d+)*', r'\1', text)
-    # Same rule, one more position: a numeral emitted into its own element from
-    # document order rather than typed. Such an element is marked data-num and only
-    # its whole content is dropped, because a numeral cannot be a claim in a position
-    # whose entire content is generated. A
+    # Same rule, one more position. The post's design pass moved the section numeral
+    # out of the heading and into an eyebrow above it, and repeated it in the contents
+    # rail, so "01" through "04" started reading as four unaccounted figures. A
     # generator that emits a numeral from document order marks it data-num, and only
     # the whole content of such an element is dropped: a numeral cannot be a claim in
     # a position whose entire content is generated from the order of the sections.
@@ -188,8 +190,9 @@ def main():
     # story page is the piece a reader actually sees: ten figures in its narrative that
     # nothing had ever read back. A checker that skips the hero artefact while reporting
     # "every printed figure traces to numbers.json" is claiming more than it does.
-    targets = sorted(set(glob.glob('docs/*.md') + ['README.md']
-                         + glob.glob('out/*.html')))
+    targets = sorted(set(glob.glob('docs/*.md') + glob.glob('docs/preprint/*.html')
+                         + glob.glob('docs/*.html') + ['README.md']
+                         + ['out/post.html', 'out/map-2022-story.html', 'out/map-2022.html']))
     # review/, plan/ and the design documents describe how the thing was built: file
     # sizes, opacities, tile dimensions. They make no claims about livestock, so they
     # are machinery like a code comment, not prose to be held to numbers.json.

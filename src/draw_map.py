@@ -212,8 +212,9 @@ def main():
     fig.suptitle("Where the world's livestock numbers come from",
                  x=0.045, y=0.982, ha='left', fontsize=18, color='#141618')
     fig.text(0.045, 0.954,
-             f'National livestock head counts reported to the FAO for {YEAR}, by how each '
-             f'figure was obtained.',
+             f'Livestock head counts in the FAOSTAT file for {YEAR}, by how each figure '
+             f'was obtained. More than a third of the head shown was never reported by a '
+             f'country.',
              fontsize=11, color='#5A6167', ha='left')
 
     # Filter on recency, not size. A size threshold wrongly admitted a 2006 figure from an

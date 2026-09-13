@@ -1,4 +1,7 @@
-"""The interactive map: out/map-2022.html, one self-contained file, no server, no library.
+"""The interactive map: out/map-2022.html, one file, no server, no JavaScript library.
+
+Not offline-clean: the page loads two typefaces from Google Fonts, and the PNG export
+fetches the same stylesheet so it can embed the faces. Both fall back to system fonts.
 
 Same data as out/map-2022.png, read from the same drawn export (out/map-2022-drawn.csv).
 Hover a country, zoom and pan, export a PNG.
@@ -7,12 +10,14 @@ Design pass of 2026-09-12 ("TP-Professional") ported in from the Claude Design d
 replacing the 2026-09-09 "Arcade light" pass. The palette, type and layout are theirs; the
 assertions below are the project's and every one of them still runs, though the no-figure
 border guard had to be re-aimed and lost margin (see main()). Notes on the pass, including
-superseded palettes, are in docs/design-notes-history.md.
+the superseded palettes, are kept with the project's working documents.
 
-  Projection. Plate carree is the default because a rectangular map is what most readers
-  expect, but it is NOT equal-area: it stretches high latitudes, so Russia, Canada and
-  Greenland render far larger than their land area. Equal Earth is offered alongside it
-  and is the honest one.
+  Projection. Equal Earth is the default, because the claim this map makes is a share of
+  the world's animals and the default has to preserve area. Plate carree stays on the
+  toggle, since a rectangular map is what most readers expect, but it is NOT equal-area:
+  it stretches high latitudes, so Russia, Canada and Greenland render far larger than
+  their land area. Changed 2026-09-11; this paragraph still said Plate carree until the
+  wrap of 13 September, so the published code contradicted itself for two days.
 
   Two variables at once. "Count + flag" puts the head count in the fill and the flag in a
   texture over it, and the texture is the stacked bar chart's mark: a dot for a country
@@ -105,6 +110,9 @@ PROJECTIONS = {
 # points at it is omitted rather than left dangling. Set POST_HREF in the environment
 # when building the pages that ship next to the write-up.
 POST_HREF = os.environ.get('POST_HREF', '')
+# The checking page was deployed with the rest and nothing linked to it, in either
+# direction, so the one artefact that shows the work could not be reached from the work.
+CHECKS_HREF = os.environ.get('CHECKS_HREF', '')
 # The rest of the navigation, same rule: unset means the link is not emitted, so the
 # repository build has no dangling pointers at pages that only exist on the website.
 SITE_HREF = os.environ.get('SITE_HREF', '')
@@ -117,7 +125,8 @@ def nav(here):
     items = [(SITE_HREF, 'Back to the site', 'site'),
              (STORY_HREF, 'The story map', 'story'),
              (FIGURE_HREF, 'The figure', 'figure'),
-             (POST_HREF, 'How this was made', 'post')]
+             (POST_HREF, 'How this was made', 'post'),
+             (CHECKS_HREF, 'The checks', 'checks')]
     out = [f'<a href="{h}">{label}</a>' for h, label, key in items if h and key != here]
     return ''.join(out)
 
@@ -356,6 +365,10 @@ def main(out='out/map-2022.html', story=False):
         '__GLYPH__': json.dumps(GLYPH),
         '__TEXMIN__': str(TEXTURE_MIN_PX2), '__TILE__': str(TEXTURE_TILE),
         '__IS_STORY__': 'true' if story else 'false',
+        # Two pages, two tabs, one title was indistinguishable between them.
+        '__PAGETITLE__': ("Where the world's livestock numbers come from (" + str(YEAR) + ')'
+                          if story else
+                          "Livestock provenance map (" + str(YEAR) + ') | the figure'),
         '__FLAG_E__': COLOURS['E'], '__FLAG_X__': COLOURS['X'],
     }.items():
         html = html.replace(k, v)
@@ -371,7 +384,7 @@ HEAD = r"""<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Where the world's livestock numbers come from (__YEAR__)</title>
+<title>__PAGETITLE__</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="__FONT_HREF__">
@@ -721,13 +734,13 @@ BODY_STORY = r"""<div class="stage veil">
     <div class="card"><div class="kk">Chapter 1 <span>Flag A</span></div>
       <h2>Half the world's chickens are officially counted.</h2>
       <div class="num">51.0<small>per cent</small></div>
-      <p>87 of the 184 countries that filed a chicken figure filed an official national count, drawn here in near-black while the rest fade back.</p></div>
+      <p>87 of the 184 reporting areas that filed a chicken figure filed an official national count, drawn here in near-black while the rest fade back.</p></div>
   </section>
   <section class="chapter" data-species="Chickens" data-mode="flag" data-flag="I" data-zoom="1270,210,2.2">
     <div class="card"><div class="kk">Chapter 2 <span>Flag I</span></div>
       <h2>For forty per cent, the FAO supplied the number.</h2>
       <div class="num">40.3<small>per cent</small></div>
-      <p>78 countries carry the imputed flag, in amber. The biggest single block is China, whose last official chicken count was in 1992.</p></div>
+      <p>78 reporting areas carry the imputed flag, in amber. The biggest single block is China, whose last official chicken count was in 1992.</p></div>
   </section>
   <section class="chapter" data-species="Cattle" data-mode="flag" data-flag="A" data-zoom="560,330,1.5">
     <div class="card"><div class="kk">Chapter 3 <span>Cattle</span></div>
@@ -744,7 +757,7 @@ BODY_STORY = r"""<div class="stage veil">
     <div class="card"><div class="kk">Chapter 5 <span>No figure</span></div>
       <h2>Ten states filed nothing, and nothing was imputed.</h2>
       <div class="num">618<small>million birds outside the map</small></div>
-      <p>They pulse on the map. None has a 2022 chicken row at all, so about 2.3 per cent of the FAO world total sits outside every percentage on this page. Including them at their nearest reported values, all official, would raise the official share to 52 per cent.</p></div>
+      <p>Fifty-seven shapes pulse here, every one with no 2022 chicken row. Ten are European states that filed in other years, and their 618 million birds are about 2.3 per cent of the FAO's world chicken row. Including them at their nearest reported values, all official, would raise the official share to 52 per cent.</p></div>
   </section>
   <section class="chapter explore" data-explore="1">
     <div class="card" id="explorecard"><div class="kk">Explore · now read it yourself <span>scroll to zoom · drag to pan · click a country for its five rows</span></div>
@@ -931,8 +944,8 @@ function paint(){
       '. Colour is a log scale, one class per decade, for '+species.toLowerCase()+' only.';
     $('hint').textContent = mode==='both'
       ? 'Colour is the head count, texture is the flag. '+(tooSmall
-          ? tooSmall+' of '+textured+' textured countries are too small to show their texture at '+k.toFixed(1)+'x. Zoom in to read them.'
-          : 'All '+textured+' textured countries are large enough to read at '+k.toFixed(1)+'x.')
+          ? tooSmall+' of '+textured+' textured areas are too small to show their texture at '+k.toFixed(1)+'x. Zoom in to read them.'
+          : 'All '+textured+' textured areas are large enough to read at '+k.toFixed(1)+'x.')
       : 'Hover a country. Keys 1 to 5 switch species. The scale is rebuilt for each species, so colours are not comparable between them.';
   }
 
@@ -954,7 +967,7 @@ function paint(){
   } else {
     const b=s.bins, n=b.colours.length;
     const cw=(LW-GAP-330)/n;
-    txt(0,-12,'sc',unit(species)[0].toUpperCase()+unit(species).slice(1)+' per country, log scale, '+species.toLowerCase()+' only');
+    txt(0,-12,'sc',unit(species)[0].toUpperCase()+unit(species).slice(1)+' per reporting area, log scale, '+species.toLowerCase()+' only');
     for(let q=0;q<n;q++){
       L.appendChild(el('rect',{x:q*cw,y:0,width:cw,height:BH,fill:b.colours[q],stroke:'none'}));
       txt(q*cw,BH+24,'sc',fmtEdge(b.edges[q]));

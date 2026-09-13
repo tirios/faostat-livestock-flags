@@ -9,7 +9,7 @@ artefacts back and fails if a printed number is not in this file.
 Run: .venv/Scripts/python src/make_numbers.py
 """
 
-import json, zipfile, io, hashlib, os, re
+import json, zipfile, io, hashlib, os, re, collections
 import pandas as pd
 
 YEAR = 2022
@@ -97,19 +97,44 @@ def small_countries():
     }
 
 
+def review_counts():
+    """Count the adversarial review record rather than remembering it.
+
+    The brief that commissioned the method essay quoted these counts from memory and got
+    two of them wrong, which is the same defect class the essay is about. So they are
+    counted from the files: severities from the raw critic output, ranked and dropped
+    items from the synthesis headings.
+    """
+    raw = json.load(open('docs/review/2026-09-06-map-review-raw.json', encoding='utf-8'))
+    sev = collections.Counter()
+    taiwan = 0
+    for c in raw['critics']:
+        sev.update(f.get('severity') for f in c['findings'])
+        taiwan += any('taiwan' in json.dumps(f).lower() for f in c['findings'])
+
+    syn = open('docs/review/2026-09-06-map-review-synthesis.md', encoding='utf-8').read()
+    lesser = syn.split('## 19 to 24')[1].split('\n---')[0]
+    dropped = syn.split('## Dropped, and why')[1].split('\n---')[0]
+    return {
+        'critics': len(raw['critics']),
+        'findings_raw': int(sum(sev.values())),
+        'findings_blocking': int(sev['blocking']),
+        'findings_serious': int(sev['serious']),
+        'findings_minor': int(sev['minor']),
+        'ranked_items': len(re.findall(r'(?m)^## (\d+)\. ', syn)),
+        'further_items': len([l for l in lesser.splitlines() if l.startswith('- ')]),
+        'dropped_claims': len([l for l in dropped.splitlines()
+                               if l.startswith('|') and not set(l) <= set('|- ')]) - 1,
+        'critics_finding_join_defect': taiwan,
+    }
+
+
 def join_defect():
-    """Rebuild the map's join on a wrong and a correct country-code override, and
-    measure both.
+    """Rebuild the map's join on the broken and the correct override, and measure both.
 
-    FAOSTAT ships both an 'Area Code' and an 'Area Code (M49)' and the two numbering
-    systems overlap: Taiwan's area code 214 is the Dominican Republic's M49. Joining
-    geometry on the wrong column paints one country with another's data.
-
-    The measurement that matters is the second one: the coverage metric returns an
-    IDENTICAL list on the wrong join and the right one, because one source row fails to
-    match while one extra geometry claims another row, and the error cancels. A check
-    that cannot distinguish the two cannot detect the fault, which is why this is
-    computed rather than asserted.
+    This is the essay's centrepiece and it is a claim about a check, so it is re-derived
+    here rather than quoted: the shipped coverage metric returns the same list either way,
+    which is exactly why it could not see the defect.
     """
     import geopandas as gpd
     d = pd.read_csv('out/stocks.csv.gz')
@@ -426,27 +451,21 @@ def main():
     # How the work was made. The method essay prints these, so they get the same drift
     # protection as the audit's own figures: counted or re-derived here, never retyped.
     n['process'] = {
+        'review': review_counts(),
         'join_defect': join_defect(),
         'filter_traps': filter_traps(df),
         # Rendered-size bias, recomputed from the export draw_map.py now writes. The claim
         # sat on the figure for a day with no artefact behind it; this is the artefact.
         'small_countries': small_countries(),
-        # Separations for the four flag fills actually shipped, as CIEDE2000 under
-        # normal vision and under the Machado 2009 protanopia and deuteranopia matrices
-        # at severity 1.0. NOT reproducible from this repository: they need colorspacious,
-        # which is not in requirements.txt. They are recorded rather than re-run so the
-        # colour choices can be argued with. The weakest flag pair is I against X under
-        # protanopia at 23.1; sea against no-figure is 6.9, which is why the no-figure
-        # fill carries a border and does not rely on its fill to separate from the ocean.
-        'colour_separation_ciede2000': {
-            'note': 'normal / protanopia / deuteranopia, Machado 2009 at severity 1.0',
-            'A_vs_E': [41.1, 42.2, 39.1],
-            'A_vs_I': [73.9, 69.3, 77.4],
-            'A_vs_X': [52.8, 49.4, 42.3],
-            'E_vs_I': [61.1, 62.6, 66.0],
-            'E_vs_X': [41.2, 37.2, 29.7],
-            'I_vs_X': [44.6, 23.1, 30.8],
-            'sea_vs_no_figure': [6.9, 7.2, 7.0],
+        # NOT reproducible in this repo. Machado 2009 severity 1.0, CIE dE76, computed by
+        # an agent during review with colorspacious, which is not in the environment. The
+        # essay says so rather than implying these can be re-run here.
+        'colour_vision_from_review_record': {
+            'official_vs_external_purple_normal': 23.2,
+            'official_vs_external_purple_protanopia': 9.6,
+            'official_vs_external_black_worst_case': 40.5,
+            'estimate_vs_no_data_protanopia': 27.9,
+            'weakest_other_pair_worst_case': 27.2,
         },
     }
 

@@ -82,8 +82,9 @@ and the archive is in the repository, because the FAO bulk endpoint serves only 
 current release. Without the file the pin cannot be checked against anything.
 
 **The checks are proven able to fail.** `src/build_eda.py --break taiwan` rebuilds the
-verification page with a deliberately wrong country-code join, and eight of its rows go
-red. A check that has only ever been green is decoration.
+verification page with a deliberately wrong country-code join, and three of its rows go
+red: the FAO area with no geometry, the shared M49 code, and the distinct-areas-drawn
+count. The row marked NOT A CHECK stays green, which is the point. A check that has only ever been green is decoration.
 
 **One check is recorded as insufficient.** `process.join_defect` in `numbers.json` holds
 the measurement that made the point. FAOSTAT ships both an `Area Code` and an
@@ -94,10 +95,13 @@ the wrong join and the right one, because one source row fails to match while on
 geometry claims another row and the error cancels. The defect is caught instead by three
 assertions that do discriminate, in `src/draw_map.py`.
 
-**Colour is checked, not asserted.** `process.colour_separation_ciede2000` records the
-separation between every pair of flag colours under normal, protanopic and deuteranopic
-vision. The weakest flag pair is `I` against `X` at 23.1. Sea against no-figure is 6.9,
-which is why a country with no figure carries a border rather than relying on its fill.
+**Colour separation was measured, but not here.** Every pair of flag colours was compared
+under normal, protanopic and deuteranopic vision, CIEDE2000. The weakest flag pair is `I`
+against `X` at 23.1. Sea against no-figure is 6.9, which is why a country with no figure
+carries a border rather than relying on its fill. Those two numbers were measured once with
+`colorspacious`, which is not a dependency of this repository, and they are recorded in a
+comment at the top of `src/draw_map.py`. Nothing here recomputes them, so unlike every other
+figure in this README they are asserted rather than checked.
 
 ## Layout
 

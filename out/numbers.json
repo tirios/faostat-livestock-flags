@@ -442,6 +442,17 @@
   "pct_imputed_rest": 16.8
  },
  "process": {
+  "review": {
+   "critics": 4,
+   "findings_raw": 44,
+   "findings_blocking": 9,
+   "findings_serious": 19,
+   "findings_minor": 16,
+   "ranked_items": 18,
+   "further_items": 7,
+   "dropped_claims": 8,
+   "critics_finding_join_defect": 4
+  },
   "join_defect": {
    "broken": {
     "duplicate_m49": [
@@ -530,43 +541,12 @@
    "pct_imputed_small": 34.2,
    "pct_imputed_rest": 16.8
   },
-  "colour_separation_ciede2000": {
-   "note": "normal / protanopia / deuteranopia, Machado 2009 at severity 1.0",
-   "A_vs_E": [
-    41.1,
-    42.2,
-    39.1
-   ],
-   "A_vs_I": [
-    73.9,
-    69.3,
-    77.4
-   ],
-   "A_vs_X": [
-    52.8,
-    49.4,
-    42.3
-   ],
-   "E_vs_I": [
-    61.1,
-    62.6,
-    66.0
-   ],
-   "E_vs_X": [
-    41.2,
-    37.2,
-    29.7
-   ],
-   "I_vs_X": [
-    44.6,
-    23.1,
-    30.8
-   ],
-   "sea_vs_no_figure": [
-    6.9,
-    7.2,
-    7.0
-   ]
+  "colour_vision_from_review_record": {
+   "official_vs_external_purple_normal": 23.2,
+   "official_vs_external_purple_protanopia": 9.6,
+   "official_vs_external_black_worst_case": 40.5,
+   "estimate_vs_no_data_protanopia": 27.9,
+   "weakest_other_pair_worst_case": 27.2
   }
  },
  "australia": {

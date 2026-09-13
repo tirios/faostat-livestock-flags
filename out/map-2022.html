@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Where the world's livestock numbers come from (2022)</title>
+<title>Livestock provenance map (2022) | the figure</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Schibsted+Grotesk:wght@400;500;600&display=swap">
@@ -315,8 +315,8 @@ function paint(){
       '. Colour is a log scale, one class per decade, for '+species.toLowerCase()+' only.';
     $('hint').textContent = mode==='both'
       ? 'Colour is the head count, texture is the flag. '+(tooSmall
-          ? tooSmall+' of '+textured+' textured countries are too small to show their texture at '+k.toFixed(1)+'x. Zoom in to read them.'
-          : 'All '+textured+' textured countries are large enough to read at '+k.toFixed(1)+'x.')
+          ? tooSmall+' of '+textured+' textured areas are too small to show their texture at '+k.toFixed(1)+'x. Zoom in to read them.'
+          : 'All '+textured+' textured areas are large enough to read at '+k.toFixed(1)+'x.')
       : 'Hover a country. Keys 1 to 5 switch species. The scale is rebuilt for each species, so colours are not comparable between them.';
   }
 
@@ -338,7 +338,7 @@ function paint(){
   } else {
     const b=s.bins, n=b.colours.length;
     const cw=(LW-GAP-330)/n;
-    txt(0,-12,'sc',unit(species)[0].toUpperCase()+unit(species).slice(1)+' per country, log scale, '+species.toLowerCase()+' only');
+    txt(0,-12,'sc',unit(species)[0].toUpperCase()+unit(species).slice(1)+' per reporting area, log scale, '+species.toLowerCase()+' only');
     for(let q=0;q<n;q++){
       L.appendChild(el('rect',{x:q*cw,y:0,width:cw,height:BH,fill:b.colours[q],stroke:'none'}));
       txt(q*cw,BH+24,'sc',fmtEdge(b.edges[q]));

@@ -1,7 +1,7 @@
 """Build out/eda.html: a single self-contained page for checking the map against the source.
 
-This is a verification instrument, not a dashboard. Its one job is to let a reader decide
-whether out/map-2022.png faithfully represents FAOSTAT, and to show them where it does not.
+This is a verification instrument, not a dashboard. Its one job is to let the author decide
+whether out/map-2022.png faithfully represents FAOSTAT, and to show him where it does not.
 Every panel is built around a defect it would expose, and every check on it has been seen
 to fail once, because a check that has only ever been green is decoration.
 
@@ -19,9 +19,8 @@ Out: out/eda.html (and, on a break build, out/eda-break.html so the good page su
 The raw archive is read once and cached under out/eda-cache/, because the dropped rows and
 FAO's own World rows are not in out/stocks.csv.gz and the page needs both.
 
-Every figure the page shows is recomputed in the browser from the embedded data and
-compared against out/numbers.json, so the page can disagree with the file that produced
-it. That is the point: a verification page that can only ever agree proves nothing.
+This file was written with heavy LLM assistance under the author's direction, like the rest
+of the project. That is disclosed on the page itself, not only here.
 """
 
 import argparse
@@ -406,6 +405,18 @@ def main():
     html = open(TEMPLATE, encoding='utf-8').read()
     assert '/*__DATA__*/null' in html, 'template has lost its data placeholder'
     html = html.replace('/*__DATA__*/null', blob)
+
+    # The write-up links here now, so the page needs a way back. Same environment
+    # variables as the other generators: unset means an empty strip, not a dead link.
+    assert '<!--__SITENAV__-->' in html, 'template has lost its nav placeholder'
+    links = ''.join(
+        '<a href="%s" style="color:inherit">%s</a>' % (h, label)
+        for h, label in ((os.environ.get('SITE_HREF', ''), 'Back to the site'),
+                         (os.environ.get('STORY_HREF', ''), 'The story map'),
+                         (os.environ.get('FIGURE_HREF', ''), 'The figure'),
+                         (os.environ.get('POST_HREF', ''), 'How this was made'))
+        if h)
+    html = html.replace('<!--__SITENAV__-->', links)
 
     out = args.out or ('out/eda.html' if brk is None else 'out/eda-break.html')
     os.makedirs('out', exist_ok=True)

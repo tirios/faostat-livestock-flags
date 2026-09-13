@@ -203,13 +203,13 @@
     <div class="card"><div class="kk">Chapter 1 <span>Flag A</span></div>
       <h2>Half the world's chickens are officially counted.</h2>
       <div class="num">51.0<small>per cent</small></div>
-      <p>87 of the 184 countries that filed a chicken figure filed an official national count, drawn here in near-black while the rest fade back.</p></div>
+      <p>87 of the 184 reporting areas that filed a chicken figure filed an official national count, drawn here in near-black while the rest fade back.</p></div>
   </section>
   <section class="chapter" data-species="Chickens" data-mode="flag" data-flag="I" data-zoom="1270,210,2.2">
     <div class="card"><div class="kk">Chapter 2 <span>Flag I</span></div>
       <h2>For forty per cent, the FAO supplied the number.</h2>
       <div class="num">40.3<small>per cent</small></div>
-      <p>78 countries carry the imputed flag, in amber. The biggest single block is China, whose last official chicken count was in 1992.</p></div>
+      <p>78 reporting areas carry the imputed flag, in amber. The biggest single block is China, whose last official chicken count was in 1992.</p></div>
   </section>
   <section class="chapter" data-species="Cattle" data-mode="flag" data-flag="A" data-zoom="560,330,1.5">
     <div class="card"><div class="kk">Chapter 3 <span>Cattle</span></div>
@@ -226,7 +226,7 @@
     <div class="card"><div class="kk">Chapter 5 <span>No figure</span></div>
       <h2>Ten states filed nothing, and nothing was imputed.</h2>
       <div class="num">618<small>million birds outside the map</small></div>
-      <p>They pulse on the map. None has a 2022 chicken row at all, so about 2.3 per cent of the FAO world total sits outside every percentage on this page. Including them at their nearest reported values, all official, would raise the official share to 52 per cent.</p></div>
+      <p>Fifty-seven shapes pulse here, every one with no 2022 chicken row. Ten are European states that filed in other years, and their 618 million birds are about 2.3 per cent of the FAO's world chicken row. Including them at their nearest reported values, all official, would raise the official share to 52 per cent.</p></div>
   </section>
   <section class="chapter explore" data-explore="1">
     <div class="card" id="explorecard"><div class="kk">Explore · now read it yourself <span>scroll to zoom · drag to pan · click a country for its five rows</span></div>
@@ -413,8 +413,8 @@ function paint(){
       '. Colour is a log scale, one class per decade, for '+species.toLowerCase()+' only.';
     $('hint').textContent = mode==='both'
       ? 'Colour is the head count, texture is the flag. '+(tooSmall
-          ? tooSmall+' of '+textured+' textured countries are too small to show their texture at '+k.toFixed(1)+'x. Zoom in to read them.'
-          : 'All '+textured+' textured countries are large enough to read at '+k.toFixed(1)+'x.')
+          ? tooSmall+' of '+textured+' textured areas are too small to show their texture at '+k.toFixed(1)+'x. Zoom in to read them.'
+          : 'All '+textured+' textured areas are large enough to read at '+k.toFixed(1)+'x.')
       : 'Hover a country. Keys 1 to 5 switch species. The scale is rebuilt for each species, so colours are not comparable between them.';
   }
 
@@ -436,7 +436,7 @@ function paint(){
   } else {
     const b=s.bins, n=b.colours.length;
     const cw=(LW-GAP-330)/n;
-    txt(0,-12,'sc',unit(species)[0].toUpperCase()+unit(species).slice(1)+' per country, log scale, '+species.toLowerCase()+' only');
+    txt(0,-12,'sc',unit(species)[0].toUpperCase()+unit(species).slice(1)+' per reporting area, log scale, '+species.toLowerCase()+' only');
     for(let q=0;q<n;q++){
       L.appendChild(el('rect',{x:q*cw,y:0,width:cw,height:BH,fill:b.colours[q],stroke:'none'}));
       txt(q*cw,BH+24,'sc',fmtEdge(b.edges[q]));
